@@ -29,6 +29,7 @@ export default function AdminSubscriptions() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [customDays, setCustomDays] = useState("");
+  const [customUnit, setCustomUnit] = useState<"minutes" | "hours" | "days">("days");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -81,13 +82,13 @@ export default function AdminSubscriptions() {
     
     const days = parseInt(customDays);
     if (isNaN(days) || days <= 0) {
-      toast({ title: "Please enter a valid number of days", variant: "destructive" });
+      toast({ title: `Please enter a valid number of ${customUnit}`, variant: "destructive" });
       return;
     }
 
     try {
-      await updateUserSubscription(selectedUser.id, `Custom (${days} days)`, days);
-      toast({ title: `Subscription activated for ${days} days!` });
+      await updateUserSubscription(selectedUser.id, `Custom (${days} ${customUnit})`, days, customUnit);
+      toast({ title: `Subscription activated for ${days} ${customUnit}!` });
       setSubscriptionDialogOpen(false);
       loadUsers();
     } catch (error) {
@@ -361,15 +362,26 @@ export default function AdminSubscriptions() {
 
             {/* Custom days option */}
             <div className="space-y-2">
-              <Label>Custom Days</Label>
+              <Label>Custom Duration</Label>
               <div className="flex gap-2">
                 <Input
                   type="number"
-                  placeholder="Enter number of days"
+                  placeholder="Enter amount"
                   value={customDays}
                   onChange={(e) => setCustomDays(e.target.value)}
                   min="1"
+                  className="flex-1"
                 />
+                <Select value={customUnit} onValueChange={(v) => setCustomUnit(v as typeof customUnit)}>
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="minutes">Minutes</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
+                    <SelectItem value="days">Days</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button 
                   onClick={handleCustomDaysSubscription}
                   disabled={!customDays}

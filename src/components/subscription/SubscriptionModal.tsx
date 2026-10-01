@@ -31,7 +31,6 @@ const toUIPlan = (p: SubscriptionPlan): UIPlan => ({
   icon: iconMap[p.icon ?? "star"] ?? Star, popular: p.popular, dailyDownloads: p.dailyDownloads,
 });
 
-const agentPlan = { duration: "Agent Plan", price: 10000, priceDisplay: "10,000", icon: Shield };
 
 const features = [
   "Unlimited movie streaming",
@@ -52,6 +51,11 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
     if (!open) return;
     return subscribePlans((p) => { setPlans(p.map(toUIPlan)); setPlansLoading(false); });
   }, [open]);
+  const [agentPlans, setAgentPlans] = useState<AgentPlan[]>([]);
+  useEffect(() => {
+    if (!open || !agentOnly) return;
+    return subscribeAgentPlans(setAgentPlans);
+  }, [open, agentOnly]);
   const [selectedPlan, setSelectedPlan] = useState<UIPlan | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"mobile" | "card">("mobile");
@@ -208,7 +212,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
             }
 
             // Save agent registration ONLY for fully successful payments
-            if (success && plan.duration === "Agent Plan") {
+            if (success && isAgentPlanName(plan.duration)) {
               try {
                 await saveRegisteredAgent({
                   userId: user.id,
@@ -434,20 +438,27 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
               <div className="w-16 h-16 rounded-full bg-orange-500/20 flex items-center justify-center">
                 <Shield className="w-8 h-8 text-orange-500" />
               </div>
-              <div className="text-center">
-               <p className="text-3xl font-bold">UGX {agentPlan.priceDisplay}</p>
-                <p className="text-sm text-muted-foreground mt-1">3 Days Access to ALL Movies + Agent Movies</p>
-              </div>
               <ul className="text-sm space-y-2 text-left w-full max-w-xs">
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> Access ALL movies on the website</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> Access exclusive Agent movies</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> HD quality streaming</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> Download for offline viewing</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> No ads interruption</li>
               </ul>
-              <Button onClick={() => handlePlanSelect(agentPlan)} className="w-full bg-orange-500 hover:bg-orange-600 text-white" size="lg">
-                Subscribe to Agent Plan
-              </Button>
+              {agentPlans.length === 0 && <p className="text-sm text-muted-foreground">Loading plans...</p>}
+              {agentPlans.map((ap) => (
+                <button
+                  key={ap.id}
+                  onClick={() => handlePlanSelect({ duration: ap.name, price: ap.price, priceDisplay: ap.price.toLocaleString("en-US"), icon: Shield })}
+                  className="w-full rounded-lg border border-orange-500/50 p-4 text-left hover:bg-orange-500/10 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">{ap.name}</span>
+                    <span className="font-bold text-orange-500">UGX {ap.price.toLocaleString("en-US")}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {ap.description || (ap.days === -1 ? "Lifetime access" : `${ap.days} days access`)}
+                  </p>
+                </button>
+              ))}
             </div>
           </>
         )}

@@ -20,6 +20,7 @@ export const dailyDownloadLimits: Record<string, number> = {
 export function getDailyLimitForPlan(plan?: string | null): number {
   if (!plan) return 0;
   if (plan in dailyDownloadLimits) return dailyDownloadLimits[plan];
+  if (plan.trim().toLowerCase().startsWith("agent")) return -1;
   return 0;
 }
 

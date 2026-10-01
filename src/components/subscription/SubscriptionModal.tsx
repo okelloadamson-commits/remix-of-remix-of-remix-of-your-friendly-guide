@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { generateOrderId, storePaymentData, planDurations, initiatePesapalPayment, verifyPaymentStatus, clearPendingPaymentData } from "@/lib/pesapal";
 import { activateSubscription } from "@/lib/subscription-service";
 import { saveTransaction } from "@/lib/admin-db";
-import { subscribePlans, type SubscriptionPlan } from "@/lib/plans-db";
+import { subscribePlans, subscribeAgentPlans, isAgentPlanName, type SubscriptionPlan, type AgentPlan } from "@/lib/plans-db";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { trackActivity, saveRegisteredAgent } from "@/lib/activity-tracker";
 

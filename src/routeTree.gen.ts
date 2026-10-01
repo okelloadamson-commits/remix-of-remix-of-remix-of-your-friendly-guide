@@ -9,24 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicSendSmsRouteImport } from './routes/api/public/send-sms'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as ApiPublicDriveCheckRouteImport } from './routes/api/public/drive-check'
+import { Route as ApiPublicPesapalRouteImport } from './routes/api/public/pesapal'
+import { Route as ApiPublicSendSmsRouteImport } from './routes/api/public/send-sms'
 
-const SplatRoute = SplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicSendSmsRoute = ApiPublicSendSmsRouteImport.update({
-  id: '/api/public/send-sms',
-  path: '/api/public/send-sms',
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicDriveCheckRoute = ApiPublicDriveCheckRouteImport.update({
@@ -34,17 +30,29 @@ const ApiPublicDriveCheckRoute = ApiPublicDriveCheckRouteImport.update({
   path: '/api/public/drive-check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPesapalRoute = ApiPublicPesapalRouteImport.update({
+  id: '/api/public/pesapal',
+  path: '/api/public/pesapal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSendSmsRoute = ApiPublicSendSmsRouteImport.update({
+  id: '/api/public/send-sms',
+  path: '/api/public/send-sms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/api/public/drive-check': typeof ApiPublicDriveCheckRoute
+  '/api/public/pesapal': typeof ApiPublicPesapalRoute
   '/api/public/send-sms': typeof ApiPublicSendSmsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/api/public/drive-check': typeof ApiPublicDriveCheckRoute
+  '/api/public/pesapal': typeof ApiPublicPesapalRoute
   '/api/public/send-sms': typeof ApiPublicSendSmsRoute
 }
 export interface FileRoutesById {
@@ -52,18 +60,30 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/api/public/drive-check': typeof ApiPublicDriveCheckRoute
+  '/api/public/pesapal': typeof ApiPublicPesapalRoute
   '/api/public/send-sms': typeof ApiPublicSendSmsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/api/public/drive-check' | '/api/public/send-sms'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/api/public/drive-check'
+    | '/api/public/pesapal'
+    | '/api/public/send-sms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/api/public/drive-check' | '/api/public/send-sms'
+  to:
+    | '/'
+    | '/$'
+    | '/api/public/drive-check'
+    | '/api/public/pesapal'
+    | '/api/public/send-sms'
   id:
     | '__root__'
     | '/'
     | '/$'
     | '/api/public/drive-check'
+    | '/api/public/pesapal'
     | '/api/public/send-sms'
   fileRoutesById: FileRoutesById
 }
@@ -71,18 +91,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   ApiPublicDriveCheckRoute: typeof ApiPublicDriveCheckRoute
+  ApiPublicPesapalRoute: typeof ApiPublicPesapalRoute
   ApiPublicSendSmsRoute: typeof ApiPublicSendSmsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/$': {
-      id: '/$'
-      path: '/$'
-      fullPath: '/$'
-      preLoaderRoute: typeof SplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -90,11 +104,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/send-sms': {
-      id: '/api/public/send-sms'
-      path: '/api/public/send-sms'
-      fullPath: '/api/public/send-sms'
-      preLoaderRoute: typeof ApiPublicSendSmsRouteImport
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/drive-check': {
@@ -104,6 +118,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDriveCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/pesapal': {
+      id: '/api/public/pesapal'
+      path: '/api/public/pesapal'
+      fullPath: '/api/public/pesapal'
+      preLoaderRoute: typeof ApiPublicPesapalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/send-sms': {
+      id: '/api/public/send-sms'
+      path: '/api/public/send-sms'
+      fullPath: '/api/public/send-sms'
+      preLoaderRoute: typeof ApiPublicSendSmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -111,6 +139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   ApiPublicDriveCheckRoute: ApiPublicDriveCheckRoute,
+  ApiPublicPesapalRoute: ApiPublicPesapalRoute,
   ApiPublicSendSmsRoute: ApiPublicSendSmsRoute,
 }
 export const routeTree = rootRouteImport

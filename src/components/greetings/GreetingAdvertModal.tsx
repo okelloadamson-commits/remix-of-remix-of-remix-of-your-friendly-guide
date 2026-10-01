@@ -196,7 +196,7 @@ export function GreetingAdvertModal({ open, onOpenChange }: GreetingAdvertModalP
     try {
       const newOrderId = generateOrderId();
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const ipnUrl = `${supabaseUrl}/functions/v1/pesapal?action=ipn`;
+      const ipnUrl = `${window.location.origin}/api/public/pesapal?action=ipn`;
       const callbackUrl = `${window.location.origin}/payment/callback`;
 
       const nameParts = user.name?.split(" ") || ["Customer"];

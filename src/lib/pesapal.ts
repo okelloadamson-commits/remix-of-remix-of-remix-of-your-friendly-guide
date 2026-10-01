@@ -77,34 +77,16 @@ export function parseCallbackParams(searchParams: URLSearchParams): {
 // Call edge function helper — uses the configured Supabase client so the
 // correct project URL, apikey and Authorization headers are always sent.
 async function callPesapalEdge(action: string, params?: Record<string, string>, body?: any): Promise<any> {
-  const { supabase } = await import("@/integrations/supabase/client");
   const queryParams = new URLSearchParams({ action, ...(params || {}) });
-
-  const { data, error } = await supabase.functions.invoke(`pesapal?${queryParams.toString()}`, {
+  const res = await fetch(`/api/public/pesapal?${queryParams.toString()}`, {
     method: body ? "POST" : "GET",
-    ...(body ? { body } : {}),
+    headers: body ? { "Content-Type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
   });
-
-  if (error) {
-    // Try to surface the edge function's JSON error message when available
-    let message = error.message || "Request failed";
-    try {
-      const resp: Response | undefined = (error as { context?: { response?: Response } }).context?.response;
-      if (resp) {
-        const text = await resp.text();
-        try {
-          const parsed = JSON.parse(text);
-          if (parsed?.error) message = parsed.error;
-        } catch {
-          if (text) message = text.slice(0, 300);
-        }
-      }
-    } catch {
-      // ignore
-    }
-    throw new Error(message);
-  }
-
+  const text = await res.text();
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { /* ignore */ }
+  if (!res.ok) throw new Error(data?.error || text.slice(0, 300) || "Request failed");
   return data;
 }
 

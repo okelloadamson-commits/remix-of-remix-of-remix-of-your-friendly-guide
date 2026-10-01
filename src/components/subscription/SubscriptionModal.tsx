@@ -300,7 +300,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
 
       // Use the edge function IPN endpoint as the callback URL
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const ipnUrl = `${supabaseUrl}/functions/v1/pesapal?action=ipn`;
+      const ipnUrl = `${window.location.origin}/api/public/pesapal?action=ipn`;
       // The callback URL for redirect within iframe — use current origin
       const callbackUrl = `${window.location.origin}/payment/callback`;
 

@@ -220,12 +220,15 @@ export async function getAllUsers(): Promise<UserData[]> {
   return users;
 }
 
+export type DurationUnit = "minutes" | "hours" | "days";
+
 export async function updateUserSubscription(
   userId: string, 
   plan: string, 
-  days: number
+  days: number,
+  unit: DurationUnit = "days"
 ): Promise<void> {
-  console.log("[Admin] Activating subscription:", { userId, plan, days });
+  console.log("[Admin] Activating subscription:", { userId, plan, days, unit });
   
   const userRef = doc(db, "users", userId);
   const now = new Date();
@@ -236,8 +239,9 @@ export async function updateUserSubscription(
     expiresAt = new Date(now);
     expiresAt.setFullYear(expiresAt.getFullYear() + 100);
   } else {
-    // Exact duration in milliseconds (e.g. 2 days = exactly 48 hours from now)
-    expiresAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+    // Exact duration in milliseconds based on the chosen unit
+    const unitMs = unit === "minutes" ? 60 * 1000 : unit === "hours" ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+    expiresAt = new Date(now.getTime() + days * unitMs);
   }
   
   console.log("[Admin] Subscription will expire at:", expiresAt.toISOString());

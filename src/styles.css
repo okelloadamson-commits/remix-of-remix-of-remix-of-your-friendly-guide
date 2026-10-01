@@ -328,9 +328,15 @@
 }
 .subscribe-gradient-border {
   position: relative;
-  display: inline-flex;
   border-radius: 9999px;
   overflow: hidden;
+}
+/* Header Subscribe pill is desktop-only; keep it displayable on lg+ only
+   so the `hidden` utility in Header.tsx wins on smaller screens. */
+@media (min-width: 1024px) {
+  .subscribe-gradient-border {
+    display: inline-flex;
+  }
 }
 .subscribe-gradient-border::before {
   content: "";

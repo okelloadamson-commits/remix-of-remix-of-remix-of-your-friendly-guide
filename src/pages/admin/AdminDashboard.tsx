@@ -42,6 +42,7 @@ const actionCards = [
   { title: "Upload Apps", description: "Add mobile and desktop apps", href: "/admin/apps", icon: Download, color: "bg-purple-500" },
   { title: "Upload Adverts", description: "Manage promotional content", href: "/admin/adverts", icon: Megaphone, color: "bg-red-500" },
   { title: "Hero Images", description: "Manage homepage hero slider images", href: "/admin/hero-slides", icon: Image, color: "bg-cyan-500" },
+  { title: "Subscription Plans", description: "Add, edit or remove plans and prices", href: "/admin/plans", icon: CreditCard, color: "bg-teal-500" },
   { title: "Transactions", description: "View payment transactions", href: "/admin/transactions", icon: CreditCard, color: "bg-yellow-500" },
   { title: "User Activities", description: "Track all user interactions", href: "/admin/activities", icon: BarChart3, color: "bg-indigo-500" },
   { title: "Registered Agents", description: "View and manage agent registrations", href: "/admin/registered-agents", icon: Shield, color: "bg-orange-600" },

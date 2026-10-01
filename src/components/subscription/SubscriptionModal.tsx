@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { generateOrderId, storePaymentData, planDurations, initiatePesapalPayment, verifyPaymentStatus, clearPendingPaymentData } from "@/lib/pesapal";
 import { activateSubscription } from "@/lib/subscription-service";
 import { saveTransaction } from "@/lib/admin-db";
+import { subscribePlans, type SubscriptionPlan } from "@/lib/plans-db";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { trackActivity, saveRegisteredAgent } from "@/lib/activity-tracker";
 
@@ -23,14 +24,12 @@ interface SubscriptionModalProps {
   agentOnly?: boolean;
 }
 
-const plans = [
-  { duration: "2 Days", price: 5000, priceDisplay: "5,000", icon: Zap, dailyDownloads: 50 },
-  { duration: "1 Week", price: 10000, priceDisplay: "10,000", icon: Zap, dailyDownloads: 50 },
-  { duration: "2 Weeks", price: 17000, priceDisplay: "17,000", icon: Star, dailyDownloads: 50 },
-  { duration: "1 Month", price: 30000, priceDisplay: "30,000", icon: Star, popular: true, dailyDownloads: 50 },
-  { duration: "3 Months", price: 70000, priceDisplay: "70,000", icon: Crown, dailyDownloads: 50 },
-  { duration: "1 Year", price: 200000, priceDisplay: "200,000", icon: Crown, dailyDownloads: 50 },
-];
+type UIPlan = { duration: string; price: number; priceDisplay: string; icon: typeof Zap; popular?: boolean; dailyDownloads?: number };
+const iconMap = { zap: Zap, star: Star, crown: Crown };
+const toUIPlan = (p: SubscriptionPlan): UIPlan => ({
+  duration: p.name, price: p.price, priceDisplay: p.price.toLocaleString("en-US"),
+  icon: iconMap[p.icon ?? "star"] ?? Star, popular: p.popular, dailyDownloads: p.dailyDownloads,
+});
 
 const agentPlan = { duration: "Agent Plan", price: 10000, priceDisplay: "10,000", icon: Shield };
 
@@ -47,7 +46,13 @@ type PaymentStep = "plans" | "agentDetails" | "phone" | "processing" | "checkout
 
 export function SubscriptionModal({ open, onOpenChange, agentOnly }: SubscriptionModalProps) {
   const [step, setStep] = useState<PaymentStep>("plans");
-  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
+  const [plans, setPlans] = useState<UIPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  useEffect(() => {
+    if (!open) return;
+    return subscribePlans((p) => { setPlans(p.map(toUIPlan)); setPlansLoading(false); });
+  }, [open]);
+  const [selectedPlan, setSelectedPlan] = useState<UIPlan | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"mobile" | "card">("mobile");
   const [agentName, setAgentName] = useState("");
@@ -141,12 +146,12 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
   };
 
   const handlePlanSelect = (plan: { duration: string; price: number; priceDisplay: string; icon: typeof Zap }) => {
-    setSelectedPlan(plan as typeof plans[0]);
+    setSelectedPlan(plan as UIPlan);
     setStep(agentOnly ? "agentDetails" : "phone");
   };
 
   // Start polling for payment status
-  const startPolling = useCallback((trackingId: string, currentOrderId: string, plan: typeof plans[0]) => {
+  const startPolling = useCallback((trackingId: string, currentOrderId: string, plan: UIPlan) => {
     let attempts = 0;
     const maxAttempts = 120; // 10 minutes at 5s intervals
 
@@ -400,6 +405,8 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
               ))}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 py-4">
+              {plansLoading && <div className="col-span-full flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}
+              {!plansLoading && plans.length === 0 && <p className="col-span-full text-center text-sm text-muted-foreground">No plans available right now.</p>}
               {plans.map((plan) => {
                 const Icon = plan.icon;
                 return (

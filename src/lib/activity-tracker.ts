@@ -89,7 +89,7 @@ export async function saveRegisteredAgent(
   // transaction verification.
   if (
     agent.status !== "success" ||
-    agent.planName !== "Agent Plan" ||
+    !agent.planName?.trim().toLowerCase().startsWith("agent") ||
     !agent.orderId ||
     !agent.orderTrackingId ||
     !agent.confirmationCode

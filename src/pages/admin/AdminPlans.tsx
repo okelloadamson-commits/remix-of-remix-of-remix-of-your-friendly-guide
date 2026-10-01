@@ -8,17 +8,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { getPlans, savePlans, type SubscriptionPlan } from "@/lib/plans-db";
+import { getPlans, getAgentPlans, savePlans, type SubscriptionPlan, type AgentPlan } from "@/lib/plans-db";
 
 export default function AdminPlans() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [agentPlans, setAgentPlans] = useState<AgentPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    getPlans().then((p) => {
+    Promise.all([getPlans(), getAgentPlans()]).then(([p, a]) => {
       setPlans(p);
+      setAgentPlans(a);
       setLoading(false);
     });
   }, []);
@@ -34,14 +36,26 @@ export default function AdminPlans() {
 
   const removePlan = (id: string) => setPlans((ps) => ps.filter((p) => p.id !== id));
 
+  const updateAgent = (id: string, patch: Partial<AgentPlan>) =>
+    setAgentPlans((ps) => ps.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  const addAgent = () =>
+    setAgentPlans((ps) => [...ps, { id: crypto.randomUUID(), name: "Agent Plan New", price: 0, days: 3, description: "" }]);
+  const removeAgent = (id: string) => setAgentPlans((ps) => ps.filter((p) => p.id !== id));
+
   const handleSave = async () => {
-    const names = plans.map((p) => p.name.trim());
+    const agentNames = agentPlans.map((p) => p.name.trim());
+    if (agentNames.some((n) => !n.toLowerCase().startsWith("agent")))
+      return toast({ title: 'Agent plan names must start with "Agent"', variant: "destructive" });
+    const names = [...plans.map((p) => p.name.trim()), ...agentNames];
     if (names.some((n) => !n)) return toast({ title: "Every plan needs a name", variant: "destructive" });
     if (new Set(names).size !== names.length)
       return toast({ title: "Plan names must be unique", variant: "destructive" });
     setSaving(true);
     try {
-      await savePlans(plans.map((p) => ({ ...p, name: p.name.trim() })));
+      await savePlans(
+        plans.map((p) => ({ ...p, name: p.name.trim() })),
+        agentPlans.map((p) => ({ ...p, name: p.name.trim() })),
+      );
       toast({ title: "Plans saved", description: "Users will now see the updated plans." });
     } catch (e) {
       toast({
@@ -131,6 +145,47 @@ export default function AdminPlans() {
           </Card>
         ))}
       </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-6 border-t">
+        <div>
+          <h2 className="text-xl font-bold text-orange-500">Agent Plans</h2>
+          <p className="text-sm text-muted-foreground">Plans that unlock ALL movies plus Agent movies. Names must start with "Agent".</p>
+        </div>
+        <Button variant="outline" onClick={addAgent}><Plus className="w-4 h-4 mr-1" /> Add agent plan</Button>
+      </div>
+      {agentPlans.length === 0 && <p className="text-muted-foreground">No agent plans. Click "Add agent plan".</p>}
+      <div className="grid gap-4 md:grid-cols-2">
+        {agentPlans.map((p) => (
+          <Card key={p.id} className="border-orange-500/40">
+            <CardContent className="p-4 grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <Label>Plan name</Label>
+                <Input value={p.name} onChange={(e) => updateAgent(p.id, { name: e.target.value })} />
+              </div>
+              <div>
+                <Label>Price (UGX)</Label>
+                <Input type="number" min={0} value={p.price}
+                  onChange={(e) => updateAgent(p.id, { price: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label>Duration (days, -1 = lifetime)</Label>
+                <Input type="number" min={-1} value={p.days}
+                  onChange={(e) => updateAgent(p.id, { days: Number(e.target.value) })} />
+              </div>
+              <div className="col-span-2">
+                <Label>Description</Label>
+                <Input value={p.description ?? ""} placeholder="e.g. 3 Days Access to ALL Movies + Agent Movies"
+                  onChange={(e) => updateAgent(p.id, { description: e.target.value })} />
+              </div>
+              <div className="col-span-2 flex justify-end">
+                <Button variant="destructive" size="sm" onClick={() => removeAgent(p.id)}>
+                  <Trash2 className="w-4 h-4 mr-1" /> Remove
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       <p className="text-xs text-muted-foreground">Changes go live for users only after you press Save.</p>
     </div>
   );

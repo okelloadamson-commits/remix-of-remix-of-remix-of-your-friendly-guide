@@ -90,7 +90,7 @@ export function useSubscription() {
   // Agent Plan grants access to ALL content (normal + agent movies)
   // Normal plans do NOT grant access to agent-marked movies
   const hasAgentPlan =
-    isAdmin || (subscription?.isActive && subscription?.plan === "Agent Plan") || false;
+    isAdmin || (subscription?.isActive && subscription?.plan?.trim().toLowerCase().startsWith("agent")) || false;
 
   const refreshSubscription = async () => {
     if (!user) return;

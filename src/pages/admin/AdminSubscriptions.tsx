@@ -12,13 +12,7 @@ import { getAllUsers, updateUserSubscription, removeUserSubscription, type UserD
 import { format, differenceInDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { Label } from "@/components/ui/label";
-import { planDurations } from "@/lib/pesapal";
-
-// Build plans array from planDurations
-const PLANS = Object.entries(planDurations).map(([name, days]) => ({
-  name,
-  days,
-}));
+import { subscribePlans, subscribeAgentPlans } from "@/lib/plans-db";
 
 export default function AdminSubscriptions() {
   const [users, setUsers] = useState<UserData[]>([]);
@@ -29,11 +23,18 @@ export default function AdminSubscriptions() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [customDays, setCustomDays] = useState("");
-  const [customUnit, setCustomUnit] = useState<"minutes" | "hours" | "days">("days");
+    const [normalPlans, setNormalPlans] = useState<{ name: string; days: number }[]>([]);
+  const [agentPlanList, setAgentPlanList] = useState<{ name: string; days: number }[]>([]);
+  const PLANS = [...normalPlans, ...agentPlanList];
+  const [customMinutes, setCustomMinutes] = useState("");
+  const [customHours, setCustomHours] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
     loadUsers();
+    const u1 = subscribePlans((p) => setNormalPlans(p.map(({ name, days }) => ({ name, days }))));
+    const u2 = subscribeAgentPlans((p) => setAgentPlanList(p.map(({ name, days }) => ({ name, days }))));
+    return () => { u1(); u2(); };
   }, []);
 
   const loadUsers = async () => {
@@ -58,6 +59,8 @@ export default function AdminSubscriptions() {
     setSelectedUser(user);
     setSelectedPlan(user.subscription?.plan || "");
     setCustomDays("");
+    setCustomMinutes("");
+    setCustomHours("");
     setSubscriptionDialogOpen(true);
   };
 
@@ -77,10 +80,10 @@ export default function AdminSubscriptions() {
     }
   };
 
-  const handleCustomDaysSubscription = async () => {
-    if (!selectedUser || !customDays) return;
-    
-    const days = parseInt(customDays);
+  const handleCustomDuration = async (value: string, unit: "minutes" | "hours" | "days") => {
+    if (!selectedUser || !value) return;
+    const customUnit = unit;
+    const days = parseInt(value);
     if (isNaN(days) || days <= 0) {
       toast({ title: `Please enter a valid number of ${customUnit}`, variant: "destructive" });
       return;
@@ -327,7 +330,7 @@ export default function AdminSubscriptions() {
               )}
             </div>
 
-            {/* All available plans from pesapal */}
+            {/* Real plans saved by admin */}
             <div className="space-y-2">
               <Label>Select Subscription Plan</Label>
               <Select value={selectedPlan} onValueChange={setSelectedPlan}>
@@ -360,35 +363,37 @@ export default function AdminSubscriptions() {
               </div>
             </div>
 
-            {/* Custom days option */}
-            <div className="space-y-2">
-              <Label>Custom Duration</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter amount"
-                  value={customDays}
-                  onChange={(e) => setCustomDays(e.target.value)}
-                  min="1"
-                  className="flex-1"
-                />
-                <Select value={customUnit} onValueChange={(v) => setCustomUnit(v as typeof customUnit)}>
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="minutes">Minutes</SelectItem>
-                    <SelectItem value="hours">Hours</SelectItem>
-                    <SelectItem value="days">Days</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button 
-                  onClick={handleCustomDaysSubscription}
-                  disabled={!customDays}
-                  variant="outline"
-                >
-                  Apply
-                </Button>
+            {/* Custom duration: separate fields */}
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label>Custom Minutes</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="1" placeholder="e.g. 30" value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)} className="flex-1" />
+                  <Button variant="outline" disabled={!customMinutes} onClick={() => handleCustomDuration(customMinutes, "minutes")}>
+                    Apply Minutes
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Custom Hours</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="1" placeholder="e.g. 6" value={customHours}
+                    onChange={(e) => setCustomHours(e.target.value)} className="flex-1" />
+                  <Button variant="outline" disabled={!customHours} onClick={() => handleCustomDuration(customHours, "hours")}>
+                    Apply Hours
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Custom Days</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="1" placeholder="e.g. 10" value={customDays}
+                    onChange={(e) => setCustomDays(e.target.value)} className="flex-1" />
+                  <Button variant="outline" disabled={!customDays} onClick={() => handleCustomDuration(customDays, "days")}>
+                    Apply Days
+                  </Button>
+                </div>
               </div>
             </div>
 

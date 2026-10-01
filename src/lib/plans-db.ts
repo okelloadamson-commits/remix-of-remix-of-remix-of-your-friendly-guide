@@ -31,6 +31,39 @@ function registerDurations(plans: SubscriptionPlan[]) {
   });
 }
 
+export interface AgentPlan {
+  id: string;
+  name: string; // must start with "Agent" so it unlocks agent movies
+  price: number;
+  days: number;
+  description?: string;
+}
+
+export const DEFAULT_AGENT_PLANS: AgentPlan[] = [
+  { id: "agent", name: "Agent Plan", price: 10000, days: 3, description: "3 Days Access to ALL Movies + Agent Movies" },
+];
+
+export const isAgentPlanName = (name?: string | null) => !!name && name.trim().toLowerCase().startsWith("agent");
+
+function normalizeAgent(data: unknown): AgentPlan[] {
+  const a = (data as { agentPlans?: AgentPlan[] } | undefined)?.agentPlans;
+  const plans = Array.isArray(a) ? a : DEFAULT_AGENT_PLANS;
+  plans.forEach((p) => { planDurations[p.name] = p.days; });
+  return plans;
+}
+
+export async function getAgentPlans(): Promise<AgentPlan[]> {
+  try {
+    return normalizeAgent((await getDoc(plansRef())).data());
+  } catch {
+    return normalizeAgent(undefined);
+  }
+}
+
+export function subscribeAgentPlans(cb: (plans: AgentPlan[]) => void): () => void {
+  return onSnapshot(plansRef(), (snap) => cb(normalizeAgent(snap.data())), () => cb(normalizeAgent(undefined)));
+}
+
 function normalize(data: unknown): SubscriptionPlan[] | null {
   const plans = (data as { plans?: SubscriptionPlan[] } | undefined)?.plans;
   return Array.isArray(plans) ? plans : null;
@@ -64,7 +97,12 @@ export function subscribePlans(cb: (plans: SubscriptionPlan[]) => void): () => v
   );
 }
 
-export async function savePlans(plans: SubscriptionPlan[]): Promise<void> {
-  await setDoc(plansRef(), { plans, updatedAt: new Date().toISOString() });
+export async function savePlans(plans: SubscriptionPlan[], agentPlans?: AgentPlan[]): Promise<void> {
+  await setDoc(
+    plansRef(),
+    { plans, ...(agentPlans ? { agentPlans } : {}), updatedAt: new Date().toISOString() },
+    { merge: true },
+  );
+  if (agentPlans) normalizeAgent({ agentPlans });
   registerDurations(plans);
 }

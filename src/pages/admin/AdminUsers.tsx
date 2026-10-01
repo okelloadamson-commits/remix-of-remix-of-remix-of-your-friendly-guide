@@ -14,14 +14,9 @@ import { getAllUsers, updateUserSubscription, removeUserSubscription, deleteUser
 import { format, differenceInDays } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { planDurations } from "@/lib/pesapal";
+import { subscribePlans, subscribeAgentPlans } from "@/lib/plans-db";
 import { useAdmin } from "@/contexts/AdminContext";
 
-// Build plans array from planDurations
-const PLANS = Object.entries(planDurations).map(([name, days]) => ({
-  name,
-  days,
-}));
 
 type FilterTab = "all" | "active" | "free";
 
@@ -34,6 +29,16 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [customDays, setCustomDays] = useState("");
+  const [customMinutes, setCustomMinutes] = useState("");
+  const [customHours, setCustomHours] = useState("");
+  const [normalPlans, setNormalPlans] = useState<{ name: string; days: number }[]>([]);
+  const [agentPlanList, setAgentPlanList] = useState<{ name: string; days: number }[]>([]);
+  const PLANS = [...normalPlans, ...agentPlanList];
+  useEffect(() => {
+    const u1 = subscribePlans((p) => setNormalPlans(p.map(({ name, days }) => ({ name, days }))));
+    const u2 = subscribeAgentPlans((p) => setAgentPlanList(p.map(({ name, days }) => ({ name, days }))));
+    return () => { u1(); u2(); };
+  }, []);
   const [giftActive, setGiftActive] = useState(false);
   const [giftLoading, setGiftLoading] = useState(false);
   const [giftMenuOpen, setGiftMenuOpen] = useState(false);
@@ -97,6 +102,8 @@ export default function AdminUsers() {
     setSelectedUser(user);
     setSelectedPlan(user.subscription?.plan || "");
     setCustomDays("");
+    setCustomMinutes("");
+    setCustomHours("");
     setSubscriptionDialogOpen(true);
   };
 
@@ -116,18 +123,17 @@ export default function AdminUsers() {
     }
   };
 
-  const handleCustomDaysSubscription = async () => {
-    if (!selectedUser || !customDays) return;
-    
-    const days = parseInt(customDays);
+  const handleCustomDuration = async (value: string, unit: "minutes" | "hours" | "days") => {
+    if (!selectedUser || !value) return;
+    const days = parseInt(value);
     if (isNaN(days) || days <= 0) {
-      toast({ title: "Please enter a valid number of days", variant: "destructive" });
+      toast({ title: `Please enter a valid number of ${unit}`, variant: "destructive" });
       return;
     }
 
     try {
-      await updateUserSubscription(selectedUser.id, `Custom (${days} days)`, days);
-      toast({ title: `Subscription activated for ${days} days!` });
+      await updateUserSubscription(selectedUser.id, `Custom (${days} ${unit})`, days, unit);
+      toast({ title: `Subscription activated for ${days} ${unit}!` });
       setSubscriptionDialogOpen(false);
       loadUsers();
     } catch (error) {
@@ -529,24 +535,36 @@ export default function AdminUsers() {
               </div>
             </div>
 
-            {/* Custom days option */}
-            <div className="space-y-2">
-              <Label>Custom Days</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Enter number of days"
-                  value={customDays}
-                  onChange={(e) => setCustomDays(e.target.value)}
-                  min="1"
-                />
-                <Button 
-                  onClick={handleCustomDaysSubscription}
-                  disabled={!customDays}
-                  variant="outline"
-                >
-                  Apply
-                </Button>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label>Custom Minutes</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="1" placeholder="e.g. 30" value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)} className="flex-1" />
+                  <Button variant="outline" disabled={!customMinutes} onClick={() => handleCustomDuration(customMinutes, "minutes")}>
+                    Apply Minutes
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Custom Hours</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="1" placeholder="e.g. 6" value={customHours}
+                    onChange={(e) => setCustomHours(e.target.value)} className="flex-1" />
+                  <Button variant="outline" disabled={!customHours} onClick={() => handleCustomDuration(customHours, "hours")}>
+                    Apply Hours
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Custom Days</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="1" placeholder="e.g. 10" value={customDays}
+                    onChange={(e) => setCustomDays(e.target.value)} className="flex-1" />
+                  <Button variant="outline" disabled={!customDays} onClick={() => handleCustomDuration(customDays, "days")}>
+                    Apply Days
+                  </Button>
+                </div>
               </div>
             </div>
 

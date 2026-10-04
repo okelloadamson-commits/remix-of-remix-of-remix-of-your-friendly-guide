@@ -19,11 +19,11 @@ export function SupportCallBar() {
         <a
           href="https://pub-1be50268c1e84d6eabf85c0b779e7eb2.r2.dev/Luo%20ancient%20movies.apk"
           download
-          className="flex min-w-0 items-center justify-center gap-1 w-full px-1 py-2 rounded-lg border border-pink-500/40 bg-pink-500/10 active:opacity-70 transition-opacity"
+          className="flex min-w-0 items-center justify-center gap-1 w-full px-1 py-2 rounded-lg font-bold text-white bg-gradient-to-r from-blue-500 to-blue-700 active:scale-[0.97] transition-transform"
           aria-label="Download the app"
         >
-          <Download className="w-3.5 h-3.5 text-pink-500 animate-pulse shrink-0" />
-          <span className="min-w-0 text-[11px] font-bold text-pink-500 whitespace-nowrap sm:text-xs">Download App</span>
+          <Download className="w-3.5 h-3.5 animate-pulse shrink-0" />
+          <span className="min-w-0 text-[11px] font-bold whitespace-nowrap sm:text-xs">Download App</span>
         </a>
 
 

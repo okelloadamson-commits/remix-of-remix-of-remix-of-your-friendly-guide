@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Phone, UserCheck, Megaphone } from "lucide-react";
+import { UserCheck, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { GreetingAdvertModal } from "@/components/greetings/GreetingAdvertModal";
 
-const SUPPORT_NUMBER = "0789096965";
 
 /**
  * Mobile-only bar under the hero slide. Shows the support phone number,

@@ -1,5 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Mail } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 
 export default function ContactPage() {
   return (
@@ -25,6 +25,20 @@ export default function ContactPage() {
           <p className="text-sm text-muted-foreground">
             We typically respond within 24 hours. For subscription or payment issues, please include your phone number and transaction details.
           </p>
+        </div>
+
+        <div className="border border-border rounded-xl p-6 mt-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Phone className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-semibold">Call Support</h2>
+              <a href="tel:0789096965" className="text-primary hover:underline text-sm">
+                0789096965
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </MainLayout>

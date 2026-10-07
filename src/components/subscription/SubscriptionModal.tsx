@@ -57,6 +57,12 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
     return subscribeAgentPlans(setAgentPlans);
   }, [open, agentOnly]);
   const [selectedPlan, setSelectedPlan] = useState<UIPlan | null>(null);
+  useEffect(() => {
+    if (!open || !agentOnly || step !== "plans" || agentPlans.length === 0) return;
+    const ap = agentPlans[0];
+    setSelectedPlan({ duration: ap.name, price: ap.price, priceDisplay: ap.price.toLocaleString("en-US"), icon: Shield } as UIPlan);
+    setStep("phone");
+  }, [open, agentOnly, step, agentPlans]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"mobile" | "card">("mobile");
   const [agentName, setAgentName] = useState("");
@@ -428,7 +434,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
         )}
 
         {/* AGENT PLAN SELECTION */}
-        {step === "plans" && isAgent && (
+        {step === "plans" && isAgent && agentPlans.length === 0 && (
           <>
             <DialogHeader>
               <DialogTitle className="text-2xl text-center">Agent Plan Required</DialogTitle>
@@ -499,7 +505,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
           <>
             <DialogHeader>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => setStep(isAgent ? "agentDetails" : "plans")}><ArrowLeft className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => (isAgent ? handleClose(false) : setStep("plans"))}><ArrowLeft className="w-5 h-5" /></Button>
                 <DialogTitle className="text-xl">Enter Phone Number</DialogTitle>
               </div>
               <DialogDescription className="sr-only">Enter your mobile money phone number</DialogDescription>
@@ -507,8 +513,24 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
             <div className="py-4 space-y-4">
               <div className="bg-accent rounded-lg p-4 text-center">
                 <p className="text-sm text-muted-foreground">{isAgent ? "Agent Plan" : `${selectedPlan.duration} Plan`}</p>
-                <p className={`text-2xl font-bold ${accentClass}`}>UGX {selectedPlan.priceDisplay}</p>
+                <p className={`text-2xl font-bold ${isAgent ? "text-blue-500" : accentClass}`}>UGX {selectedPlan.priceDisplay}</p>
               </div>
+              {isAgent && (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Your Name (optional)</label>
+                    <Input type="text" placeholder="e.g. John Doe" value={agentName} onChange={(e) => setAgentName(e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Name of Business (optional)</label>
+                    <Input type="text" placeholder="e.g. Doe Movies Shop" value={agentBusiness} onChange={(e) => setAgentBusiness(e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Your Location (optional)</label>
+                    <Input type="text" placeholder="e.g. Kampala, Wandegeya" value={agentLocation} onChange={(e) => setAgentLocation(e.target.value)} className="mt-1" />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="text-sm font-medium">Payment Method</label>
                 <div className="grid grid-cols-2 gap-2 mt-1">
@@ -538,7 +560,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
               {paymentMethod === "card" && (
                 <p className="text-xs text-muted-foreground">You will enter your card details securely on the Pesapal checkout page.</p>
               )}
-              <Button onClick={handlePayment} className={`w-full ${isAgent ? "bg-orange-500 hover:bg-orange-600 text-white" : "gradient-primary"}`} size="lg">
+              <Button onClick={handlePayment} className={`w-full ${isAgent ? "bg-red-600 hover:bg-red-700 text-white font-semibold" : "gradient-primary"}`} size="lg">
                 Pay UGX {selectedPlan.priceDisplay}
               </Button>
             </div>

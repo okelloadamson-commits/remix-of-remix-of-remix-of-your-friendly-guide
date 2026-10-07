@@ -479,26 +479,13 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
               </div>
               <DialogDescription>All fields are optional. You can skip and continue to payment.</DialogDescription>
             </DialogHeader>
-            <div className="py-4 space-y-4">
-              <div className="bg-accent rounded-lg p-4 text-center">
-                <p className="text-sm text-muted-foreground">{selectedPlan.duration}</p>
-                <p className="text-2xl font-bold text-blue-500">UGX {selectedPlan.priceDisplay}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Your Name</label>
-                <Input type="text" placeholder="e.g. John Doe" value={agentName} onChange={(e) => setAgentName(e.target.value)} className="mt-1" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Name of Business</label>
-                <Input type="text" placeholder="e.g. Doe Movies Shop" value={agentBusiness} onChange={(e) => setAgentBusiness(e.target.value)} className="mt-1" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Your Location</label>
-                <Input type="text" placeholder="e.g. Kampala, Wandegeya" value={agentLocation} onChange={(e) => setAgentLocation(e.target.value)} className="mt-1" />
-              </div>
+            <div className="py-2 space-y-3">
+              <Input type="text" placeholder="Your Name (e.g. John Doe)" value={agentName} onChange={(e) => setAgentName(e.target.value)} className="h-14" />
+              <Input type="text" placeholder="Name of Business (e.g. Doe Movies Shop)" value={agentBusiness} onChange={(e) => setAgentBusiness(e.target.value)} className="h-14" />
+              <Input type="text" placeholder="Your Location (e.g. Kampala, Wandegeya)" value={agentLocation} onChange={(e) => setAgentLocation(e.target.value)} className="h-14" />
               <p className="text-xs text-muted-foreground">Details are saved only after a successful payment.</p>
-              <Button onClick={() => setStep("phone")} className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold" size="lg">
-                Pay UGX {selectedPlan.priceDisplay}
+              <Button onClick={() => setStep("phone")} className="w-full bg-orange-500 hover:bg-orange-600 text-black font-semibold" size="lg">
+                Continue to Payment
               </Button>
             </div>
           </>

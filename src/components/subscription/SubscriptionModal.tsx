@@ -61,7 +61,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
     if (!open || !agentOnly || step !== "plans" || agentPlans.length === 0) return;
     const ap = agentPlans[0];
     setSelectedPlan({ duration: ap.name, price: ap.price, priceDisplay: ap.price.toLocaleString("en-US"), icon: Shield } as UIPlan);
-    setStep("phone");
+    setStep("agentDetails");
   }, [open, agentOnly, step, agentPlans]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"mobile" | "card">("mobile");
@@ -474,12 +474,16 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
           <>
             <DialogHeader>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => setStep("plans")}><ArrowLeft className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => handleClose(false)}><ArrowLeft className="w-5 h-5" /></Button>
                 <DialogTitle className="text-xl">Agent Registration</DialogTitle>
               </div>
               <DialogDescription>All fields are optional. You can skip and continue to payment.</DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
+              <div className="bg-accent rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">{selectedPlan.duration}</p>
+                <p className="text-2xl font-bold text-blue-500">UGX {selectedPlan.priceDisplay}</p>
+              </div>
               <div>
                 <label className="text-sm font-medium">Your Name</label>
                 <Input type="text" placeholder="e.g. John Doe" value={agentName} onChange={(e) => setAgentName(e.target.value)} className="mt-1" />
@@ -493,8 +497,8 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
                 <Input type="text" placeholder="e.g. Kampala, Wandegeya" value={agentLocation} onChange={(e) => setAgentLocation(e.target.value)} className="mt-1" />
               </div>
               <p className="text-xs text-muted-foreground">Details are saved only after a successful payment.</p>
-              <Button onClick={() => setStep("phone")} className="w-full bg-orange-500 hover:bg-orange-600 text-white" size="lg">
-                Continue to Payment
+              <Button onClick={() => setStep("phone")} className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold" size="lg">
+                Pay UGX {selectedPlan.priceDisplay}
               </Button>
             </div>
           </>
@@ -505,7 +509,7 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
           <>
             <DialogHeader>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => (isAgent ? handleClose(false) : setStep("plans"))}><ArrowLeft className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => setStep(isAgent ? "agentDetails" : "plans")}><ArrowLeft className="w-5 h-5" /></Button>
                 <DialogTitle className="text-xl">Enter Phone Number</DialogTitle>
               </div>
               <DialogDescription className="sr-only">Enter your mobile money phone number</DialogDescription>
@@ -515,22 +519,6 @@ export function SubscriptionModal({ open, onOpenChange, agentOnly }: Subscriptio
                 <p className="text-sm text-muted-foreground">{isAgent ? "Agent Plan" : `${selectedPlan.duration} Plan`}</p>
                 <p className={`text-2xl font-bold ${isAgent ? "text-blue-500" : accentClass}`}>UGX {selectedPlan.priceDisplay}</p>
               </div>
-              {isAgent && (
-                <>
-                  <div>
-                    <label className="text-sm font-medium">Your Name (optional)</label>
-                    <Input type="text" placeholder="e.g. John Doe" value={agentName} onChange={(e) => setAgentName(e.target.value)} className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Name of Business (optional)</label>
-                    <Input type="text" placeholder="e.g. Doe Movies Shop" value={agentBusiness} onChange={(e) => setAgentBusiness(e.target.value)} className="mt-1" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Your Location (optional)</label>
-                    <Input type="text" placeholder="e.g. Kampala, Wandegeya" value={agentLocation} onChange={(e) => setAgentLocation(e.target.value)} className="mt-1" />
-                  </div>
-                </>
-              )}
               <div>
                 <label className="text-sm font-medium">Payment Method</label>
                 <div className="grid grid-cols-2 gap-2 mt-1">

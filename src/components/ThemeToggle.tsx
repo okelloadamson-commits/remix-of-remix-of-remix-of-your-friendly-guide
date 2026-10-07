@@ -27,7 +27,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setIsDark(!isDark)}
-      className="w-9 h-9"
+      className="w-9 h-9 rounded-full border border-border bg-muted/50"
       aria-label="Toggle theme"
     >
       {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

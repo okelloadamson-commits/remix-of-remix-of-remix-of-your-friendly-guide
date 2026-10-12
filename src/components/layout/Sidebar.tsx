@@ -124,17 +124,17 @@ export function Sidebar() {
             <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-orange-300/25 rounded-full blur-xl pointer-events-none" />
 
             <div className="relative z-10">
-              <h3 className="text-white text-lg font-bold leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
+              <h3 className="text-white text-xl font-black leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
                 Subscribe<br />Now
               </h3>
-              <p className="text-white text-[11px] font-semibold mt-1.5 leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+              <p className="text-white text-xs font-extrabold mt-1.5 leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                 Get unlimited access to all content
               </p>
             </div>
 
             <button
               onClick={() => setSubscriptionOpen(true)}
-              className="relative z-10 block w-full bg-white text-purple-700 hover:bg-purple-50 text-sm font-bold py-2 rounded-xl text-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              className="relative z-10 block w-full bg-white text-purple-700 hover:bg-purple-50 text-sm font-black py-2 rounded-xl text-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
             >
               View Plans
             </button>

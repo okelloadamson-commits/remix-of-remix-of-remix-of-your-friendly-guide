@@ -118,23 +118,23 @@ export function Sidebar() {
 
         {/* Subscribe CTA */}
         <div className="p-4 border-t border-sidebar-border">
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-red-600 via-red-500 to-orange-400 shadow-[0_12px_35px_rgba(220,38,38,0.35)] flex flex-col justify-between p-4 border border-white/10">
+          <div className="relative aspect-square rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(128,0,255,0.35)] flex flex-col justify-between p-4 border border-white/10" style={{ backgroundImage: 'linear-gradient(135deg, #ff0000, #ff8000, #ffff00, #00ff00, #00bfff, #8000ff, #ff00ff)' }}>
             {/* Soft glow accents */}
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/15 rounded-full blur-2xl pointer-events-none" />
             <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-orange-300/25 rounded-full blur-xl pointer-events-none" />
 
             <div className="relative z-10">
-              <h3 className="text-white text-lg font-bold leading-tight">
+              <h3 className="text-white text-lg font-bold leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
                 Subscribe<br />Now
               </h3>
-              <p className="text-white/85 text-[11px] font-medium mt-1.5 leading-snug">
+              <p className="text-white text-[11px] font-semibold mt-1.5 leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                 Get unlimited access to all content
               </p>
             </div>
 
             <button
               onClick={() => setSubscriptionOpen(true)}
-              className="relative z-10 block w-full bg-white text-red-600 hover:bg-red-50 text-sm font-bold py-2 rounded-xl text-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              className="relative z-10 block w-full bg-white text-purple-700 hover:bg-purple-50 text-sm font-bold py-2 rounded-xl text-center shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
             >
               View Plans
             </button>

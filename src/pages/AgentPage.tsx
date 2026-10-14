@@ -29,7 +29,7 @@ export default function AgentPage() {
         
         // Agent movies
         const agentMovies = movies
-          .filter((m) => isMovieInAgentMode(m))
+          .filter((m) => isMovieInAgentMode(m) && !m.hiddenFromWebAgent)
           .map((m) => ({ ...m, type: 'movie' as const }));
         
         // Get all episodes and find agent ones

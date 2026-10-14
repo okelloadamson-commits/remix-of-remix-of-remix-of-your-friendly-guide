@@ -17,7 +17,7 @@ export function AgentMovieNotification({ inline = false }: { inline?: boolean })
     async function checkAgentMovies() {
       try {
         const [movies, seriesList] = await Promise.all([getMovies(), getSeries()]);
-        const agentMovies = movies.filter((m) => isMovieInAgentMode(m));
+        const agentMovies = movies.filter((m) => isMovieInAgentMode(m) && !m.hiddenFromWebAgent);
 
         // Check agent episodes with valid parent series (matching AgentPage logic)
         const episodesRef = ref(database, "episodes");

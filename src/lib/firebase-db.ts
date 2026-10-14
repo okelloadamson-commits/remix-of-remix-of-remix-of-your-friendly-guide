@@ -58,6 +58,8 @@ export interface Movie {
   isFeatured: boolean;
   isAgent?: boolean;
   agentMarkedAt?: number;
+  /** Website-only: hide this agent movie from the website Agent page (mobile app ignores it) */
+  hiddenFromWebAgent?: boolean;
   isLuoChampion?: boolean;
   vjName?: string;
   createdAt: number;

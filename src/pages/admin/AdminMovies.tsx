@@ -38,6 +38,7 @@ export default function AdminMovies() {
     displayCategories: [] as string[],
     isFeatured: false,
     isAgent: false,
+    hiddenFromWebAgent: false,
     vjName: "",
   });
 
@@ -66,6 +67,7 @@ export default function AdminMovies() {
       displayCategories: [],
       isFeatured: false,
       isAgent: false,
+      hiddenFromWebAgent: false,
       vjName: "",
     });
     setEditingMovie(null);
@@ -86,6 +88,7 @@ export default function AdminMovies() {
       displayCategories: movie.displayCategories || [],
       isFeatured: movie.isFeatured,
       isAgent: movie.isAgent || false,
+      hiddenFromWebAgent: movie.hiddenFromWebAgent || false,
       vjName: movie.vjName || "",
     });
     setDialogOpen(true);
@@ -98,7 +101,7 @@ export default function AdminMovies() {
         ...formData,
         ...(formData.isAgent
           ? { agentMarkedAt: editingMovie?.isAgent ? (editingMovie as any).agentMarkedAt || Date.now() : Date.now() }
-          : { isAgent: false }),
+          : { isAgent: false, hiddenFromWebAgent: false }),
       };
       // Firebase Realtime DB rejects undefined values — strip them
       Object.keys(dataToSave).forEach((k) => {
@@ -319,6 +322,16 @@ export default function AdminMovies() {
                   />
                   <Label htmlFor="isAgent" className="text-orange-500 font-semibold">Agent Movie</Label>
                 </div>
+                {formData.isAgent && (
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="hiddenFromWebAgent"
+                      checked={formData.hiddenFromWebAgent}
+                      onCheckedChange={(checked) => setFormData({ ...formData, hiddenFromWebAgent: checked })}
+                    />
+                    <Label htmlFor="hiddenFromWebAgent">Hide from website Agent page</Label>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2">
@@ -397,7 +410,20 @@ export default function AdminMovies() {
                     </TableCell>
                     <TableCell>
                       {movie.isAgent ? (
-                        <span className="text-orange-500 font-semibold">Agent</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-orange-500 font-semibold">Agent</span>
+                          <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Switch
+                              checked={!!movie.hiddenFromWebAgent}
+                              onCheckedChange={async (checked) => {
+                                await updateMovie(movie.id!, { hiddenFromWebAgent: checked } as any);
+                                setMovies((prev) => prev.map((m) => (m.id === movie.id ? { ...m, hiddenFromWebAgent: checked } : m)));
+                                toast({ title: checked ? "Hidden from website Agent page" : "Showing on website Agent page" });
+                              }}
+                            />
+                            Hide on web
+                          </label>
+                        </div>
                       ) : (
                         <span className="text-muted-foreground">No</span>
                       )}

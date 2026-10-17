@@ -13,3 +13,5 @@
 - Admin subscriber lists listen to Firestore and key accounts by Firebase UID; listing accounts must never deduplicate by email or delete records.
 - Expiry-sensitive views use the subscription clock to update without requiring a Firebase write or page reload.
 - Gift revocation uses a transaction and only clears the current gift plan; a replacement paid plan must remain untouched.
+
+- Download dialogs keep the embedded frame mounted across player updates and use one user-initiated fallback link; callback identity must never restart navigation or trigger duplicate downloads.

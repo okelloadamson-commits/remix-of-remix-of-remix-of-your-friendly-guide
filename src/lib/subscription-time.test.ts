@@ -1,4 +1,12 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it } from "node:test";
+import { strict as assert } from "node:assert";
+
+function expect(actual: unknown) {
+  return {
+    toBe: (expected: unknown) => assert.equal(actual, expected),
+    toEqual: (expected: unknown) => assert.deepEqual(actual, expected),
+  };
+}
 import { subscriptionDate, isSubscriptionCurrent, preserveSubscriberAccounts, isRevocableGift } from "./subscription-time";
 
 describe("subscription expiry", () => {

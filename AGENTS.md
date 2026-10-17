@@ -8,3 +8,8 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Subscription status reads use the shared timestamp normalizer and exact expiry predicate; never write deactivation during reads, because stale browser reads can revoke a renewed plan.
+- Admin subscriber lists listen to Firestore and key accounts by Firebase UID; listing accounts must never deduplicate by email or delete records.
+- Expiry-sensitive views use the subscription clock to update without requiring a Firebase write or page reload.
+- Gift revocation uses a transaction and only clears the current gift plan; a replacement paid plan must remain untouched.

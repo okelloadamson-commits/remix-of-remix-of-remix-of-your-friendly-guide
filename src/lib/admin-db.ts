@@ -1,8 +1,9 @@
 import { database, legacyDatabase, db } from "./firebase";
 import { ref, push, set, get, update, remove, type Database } from "firebase/database";
-import { collection, getDocs, doc, updateDoc, deleteDoc, Timestamp, getDoc, setDoc, query, orderBy, limit, where, writeBatch } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc, Timestamp, getDoc, setDoc, query, orderBy, limit, where, writeBatch, onSnapshot, runTransaction } from "firebase/firestore";
 import type { Movie, Series, Episode, Advert, HeroImage, App, Comedy } from "./firebase-db";
 import { resetTodayDownloadCount } from "./download-limit";
+import { subscriptionDate, isSubscriptionCurrent, preserveSubscriberAccounts, isRevocableGift } from "./subscription-time";
 
 // Pick the DB that actually contains the entity at `path`. New DB wins;
 // fall back to legacy so editing/deleting old content keeps working.
@@ -211,13 +212,35 @@ export async function getAllUsers(): Promise<UserData[]> {
       avatar: data.avatar,
       subscription: data.subscription ? {
         plan: data.subscription.plan,
-        expiresAt: data.subscription.expiresAt?.toDate ? data.subscription.expiresAt.toDate() : new Date(data.subscription.expiresAt),
+        expiresAt: subscriptionDate(data.subscription.expiresAt) || new Date(0),
         isActive: data.subscription.isActive,
       } : undefined,
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : undefined,
     });
   });
   return users;
+}
+
+export function subscribeUsers(onUsers: (users: UserData[]) => void, onError: (error: Error) => void) {
+  return onSnapshot(collection(db, "users"), (snapshot) => {
+    const users = snapshot.docs.map((snap): UserData => {
+      const data = snap.data();
+      return {
+        id: snap.id,
+        name: data.name || "Unknown",
+        email: data.email || "",
+        isAdmin: data.isAdmin || false,
+        avatar: data.avatar,
+        createdAt: subscriptionDate(data.createdAt),
+        subscription: data.subscription ? {
+          plan: data.subscription.plan,
+          expiresAt: subscriptionDate(data.subscription.expiresAt) || new Date(0),
+          isActive: data.subscription.isActive,
+        } : undefined,
+      };
+    });
+    onUsers(preserveSubscriberAccounts(users));
+  }, onError);
 }
 
 export type DurationUnit = "minutes" | "hours" | "days";
@@ -340,11 +363,7 @@ export async function getAdminStats(): Promise<{
     getAllUsers(),
   ]);
 
-  const activeSubscriptions = users.filter(user =>
-    user.subscription?.isActive &&
-    user.subscription.expiresAt &&
-    new Date(user.subscription.expiresAt) > new Date()
-  ).length;
+  const activeSubscriptions = users.filter(user => isSubscriptionCurrent(user.subscription)).length;
 
   return {
     totalMovies,
@@ -479,52 +498,17 @@ export async function revokeGiftDayFromAllUsers(): Promise<number> {
     return 0;
   }
 
-  const now = new Date();
   let count = 0;
-
-  // Fetch all recipient docs in parallel, then batch the writes
-  const snaps = await Promise.all(
-    state.recipients.map((uid) => getDoc(doc(db, "users", uid)))
-  );
-
-  const CHUNK = 450;
-  type Op = { userId: string; sub: any; expiresAt: Date };
-  const ops: Op[] = [];
-  snaps.forEach((snap, idx) => {
-    if (!snap.exists()) return;
-    const data = snap.data();
-    const sub = data.subscription;
-    if (!sub?.expiresAt) return;
-    const expiresAt: Date = sub.expiresAt?.toDate
-      ? sub.expiresAt.toDate()
-      : new Date(sub.expiresAt);
-    ops.push({ userId: state.recipients[idx], sub, expiresAt });
-  });
-
-  for (let i = 0; i < ops.length; i += CHUNK) {
-    const batch = writeBatch(db);
-    const slice = ops.slice(i, i + CHUNK);
-    for (const { userId, sub, expiresAt } of slice) {
+  // Transactions protect purchases made while the gift is being revoked.
+  for (const userId of state.recipients) {
+    const revoked = await runTransaction(db, async (transaction) => {
       const userRef = doc(db, "users", userId);
-      const reduced = new Date(expiresAt.getTime() - ONE_DAY_MS);
-      if (sub.plan === GIFT_PLAN_NAME || reduced <= now) {
-        batch.set(userRef, { subscription: null }, { merge: true });
-      } else {
-        batch.set(
-          userRef,
-          {
-            subscription: {
-              ...sub,
-              expiresAt: Timestamp.fromDate(reduced),
-              giftDayApplied: false,
-            },
-          },
-          { merge: true }
-        );
-      }
-      count++;
-    }
-    await batch.commit();
+      const snap = await transaction.get(userRef);
+      if (!isRevocableGift(snap.data()?.subscription)) return false;
+      transaction.update(userRef, { subscription: null });
+      return true;
+    });
+    if (revoked) count++;
   }
 
   await setDoc(doc(db, "config", "giftDay"), { active: false, recipients: [] });

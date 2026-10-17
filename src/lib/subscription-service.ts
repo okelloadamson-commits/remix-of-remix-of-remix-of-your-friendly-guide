@@ -2,6 +2,7 @@ import { doc, setDoc, getDoc, updateDoc, Timestamp, collection, query, where, ge
 import { db } from "./firebase";
 import { planDurations } from "./pesapal";
 import { resetTodayDownloadCount } from "./download-limit";
+import { subscriptionDate, isSubscriptionCurrent } from "./subscription-time";
 
 export interface Subscription {
   plan: string;
@@ -14,7 +15,7 @@ export interface Subscription {
 }
 
 // Check if user has active subscription - checks both users collection and subscriptions collection
-// Automatically deactivates expired subscriptions in Firestore
+// Read-only: an old read must never deactivate a concurrently renewed subscription.
 export async function checkUserSubscription(userId: string): Promise<Subscription | null> {
   try {
     // First check the users collection (legacy support)
@@ -24,31 +25,23 @@ export async function checkUserSubscription(userId: string): Promise<Subscriptio
     if (userDoc.exists()) {
       const data = userDoc.data();
       if (data.subscription) {
-        const expiresAt = data.subscription.expiresAt?.toDate?.() || new Date(data.subscription.expiresAt);
-        const isExpired = new Date() > expiresAt;
+        const expiresAt = subscriptionDate(data.subscription.expiresAt);
         
-        if (!isExpired && data.subscription.isActive) {
+        if (expiresAt && isSubscriptionCurrent(data.subscription)) {
           return {
             plan: data.subscription.plan,
             expiresAt,
             isActive: true,
             orderId: data.subscription.orderId,
             orderTrackingId: data.subscription.orderTrackingId,
-            activatedAt: data.subscription.activatedAt?.toDate?.() || undefined,
+            activatedAt: subscriptionDate(data.subscription.activatedAt),
             userId,
           };
         }
 
-        // Auto-deactivate expired subscription on the user doc
-        if (isExpired && data.subscription.isActive) {
-          try {
-            await updateDoc(userDocRef, { "subscription.isActive": false });
-            console.log("[Sub] Auto-deactivated expired subscription for user:", userId);
-          } catch (e) {
-            console.error("[Sub] Failed to auto-deactivate user subscription:", e);
-          }
-        }
       }
+      // The current user record is authoritative, including explicit revocation.
+      if (Object.prototype.hasOwnProperty.call(data, "subscription")) return null;
     }
 
     // Also check subscriptions collection
@@ -58,14 +51,12 @@ export async function checkUserSubscription(userId: string): Promise<Subscriptio
 
     let latestSubscription: Subscription | null = null;
     let latestExpiry = new Date(0);
-    const expiredIds: string[] = [];
 
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
-      const expiresAt = data.expiresAt?.toDate?.() || new Date(data.expiresAt);
-      const isExpired = new Date() > expiresAt;
+      const expiresAt = subscriptionDate(data.expiresAt);
 
-      if (!isExpired && data.isActive && expiresAt > latestExpiry) {
+      if (expiresAt && isSubscriptionCurrent(data) && expiresAt > latestExpiry) {
         latestExpiry = expiresAt;
         latestSubscription = {
           plan: data.plan,
@@ -73,24 +64,11 @@ export async function checkUserSubscription(userId: string): Promise<Subscriptio
           isActive: true,
           orderId: data.orderId,
           orderTrackingId: data.orderTrackingId,
-          activatedAt: data.activatedAt?.toDate?.() || undefined,
+          activatedAt: subscriptionDate(data.activatedAt),
           userId: data.userId,
         };
-      } else if (isExpired && data.isActive) {
-        expiredIds.push(docSnap.id);
       }
     });
-
-    // Fire-and-forget: deactivate expired docs
-    if (expiredIds.length > 0) {
-      Promise.all(
-        expiredIds.map((id) =>
-          updateDoc(doc(db, "subscriptions", id), { isActive: false }).catch((e) =>
-            console.error("[Sub] Failed to auto-deactivate sub doc:", id, e)
-          )
-        )
-      );
-    }
 
     return latestSubscription;
   } catch (error) {

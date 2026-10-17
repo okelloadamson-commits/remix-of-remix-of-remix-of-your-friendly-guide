@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Prevent premature subscription removal and update Active at the saved expiry.
+- [ ] Test subscription boundary, timestamp handling, and account preservation.
+
 - [x] Tighten and center the mobile phone, Agent, and Advert controls without overflow.
 - [x] Remove the Upload Luo Champion admin card and the Luo Champion checkbox from movie uploads only.
 - [x] Add Greeting Advert access to the desktop sidebar.

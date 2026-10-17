@@ -5,6 +5,8 @@ import {
   resetDownloadCountsForSubscription,
 } from "@/lib/download-limit";
 import type { Subscription } from "@/lib/subscription-service";
+import { isSubscriptionCurrent } from "@/lib/subscription-time";
+import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
 
 const ADMIN_EMAIL = "lightstarrecord@gmail.com";
 
@@ -12,6 +14,7 @@ export function useSubscription() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const now = useSubscriptionClock([subscription?.expiresAt]);
 
   // Admin has free access
   const isAdmin = user?.email === ADMIN_EMAIL;
@@ -86,11 +89,11 @@ export function useSubscription() {
     resetDownloadCountsForSubscription(user.id, resetKey);
   }, [user?.id, user?.plan, isAdmin]);
 
-  const hasActiveSubscription = isAdmin || subscription?.isActive || false;
+  const hasActiveSubscription = isAdmin || isSubscriptionCurrent(subscription, now);
   // Agent Plan grants access to ALL content (normal + agent movies)
   // Normal plans do NOT grant access to agent-marked movies
   const hasAgentPlan =
-    isAdmin || (subscription?.isActive && subscription?.plan?.trim().toLowerCase().startsWith("agent")) || false;
+    isAdmin || (hasActiveSubscription && subscription?.plan?.trim().toLowerCase().startsWith("agent")) || false;
 
   const refreshSubscription = async () => {
     if (!user) return;

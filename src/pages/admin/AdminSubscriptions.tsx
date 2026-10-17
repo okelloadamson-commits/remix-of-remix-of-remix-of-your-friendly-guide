@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, CreditCard, X, ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getAllUsers, updateUserSubscription, removeUserSubscription, type UserData } from "@/lib/admin-db";
+import { getAllUsers, subscribeUsers, updateUserSubscription, removeUserSubscription, type UserData } from "@/lib/admin-db";
+import { isSubscriptionCurrent } from "@/lib/subscription-time";
+import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
 import { format, differenceInDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,7 @@ import { subscribePlans, subscribeAgentPlans } from "@/lib/plans-db";
 
 export default function AdminSubscriptions() {
   const [users, setUsers] = useState<UserData[]>([]);
+  const now = useSubscriptionClock(users.map((user) => user.subscription?.expiresAt));
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "expired" | "free">("all");
@@ -31,10 +34,16 @@ export default function AdminSubscriptions() {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadUsers();
+    const unsubscribe = subscribeUsers((data) => {
+      setUsers(data);
+      setIsLoading(false);
+    }, () => {
+      setIsLoading(false);
+      toast({ title: "Unable to refresh subscriptions", variant: "destructive" });
+    });
     const u1 = subscribePlans((p) => setNormalPlans(p.map(({ name, days }) => ({ name, days }))));
     const u2 = subscribeAgentPlans((p) => setAgentPlanList(p.map(({ name, days }) => ({ name, days }))));
-    return () => { u1(); u2(); };
+    return () => { unsubscribe(); u1(); u2(); };
   }, []);
 
   const loadUsers = async () => {
@@ -45,13 +54,11 @@ export default function AdminSubscriptions() {
   };
 
   const isSubscriptionActive = (user: UserData) => {
-    return user.subscription?.isActive && 
-           user.subscription.expiresAt && 
-           new Date(user.subscription.expiresAt) > new Date();
+    return isSubscriptionCurrent(user.subscription, now);
   };
 
   const getDaysRemaining = (expiresAt: Date) => {
-    const days = differenceInDays(new Date(expiresAt), new Date());
+    const days = Math.ceil((new Date(expiresAt).getTime() - now) / 86_400_000);
     return days > 0 ? days : 0;
   };
 

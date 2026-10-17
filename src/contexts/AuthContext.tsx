@@ -13,6 +13,8 @@ import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { auth, googleProvider, db } from "@/lib/firebase";
 import { resetTodayDownloadCount } from "@/lib/download-limit";
 import { migrateLegacySubscription } from "@/lib/legacy-migration";
+import { subscriptionDate, isSubscriptionCurrent } from "@/lib/subscription-time";
+import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
 
 export interface User {
   id: string;
@@ -29,11 +31,7 @@ export interface User {
 }
 
 function toDate(value: unknown): Date | undefined {
-  if (!value) return undefined;
-  if (typeof value === "object" && "toDate" in value && typeof value.toDate === "function") {
-    return value.toDate();
-  }
-  return new Date(value as string | number | Date);
+  return subscriptionDate(value);
 }
 
 interface AuthContextType {
@@ -97,6 +95,14 @@ async function getUserData(firebaseUser: FirebaseUser): Promise<User> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const now = useSubscriptionClock([user?.plan?.expiresAt]);
+
+  useEffect(() => {
+    setUser((current) => {
+      if (!current?.plan || isSubscriptionCurrent(current.plan, now)) return current;
+      return { ...current, plan: undefined };
+    });
+  }, [now]);
 
   useEffect(() => {
     // Listen to Firebase auth state changes

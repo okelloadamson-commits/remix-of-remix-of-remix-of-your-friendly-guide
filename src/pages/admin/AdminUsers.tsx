@@ -10,7 +10,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Search, Trash2, CreditCard, UserX, ChevronLeft, Users, UserCheck, UserMinus, Gift, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getAllUsers, updateUserSubscription, removeUserSubscription, deleteUser, getGiftDayState, giftOneDayToAllUsers, revokeGiftDayFromAllUsers, type UserData } from "@/lib/admin-db";
+import { getAllUsers, subscribeUsers, updateUserSubscription, removeUserSubscription, deleteUser, getGiftDayState, giftOneDayToAllUsers, revokeGiftDayFromAllUsers, type UserData } from "@/lib/admin-db";
+import { isSubscriptionCurrent, preserveSubscriberAccounts } from "@/lib/subscription-time";
+import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
 import { format, differenceInDays } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
@@ -22,6 +24,7 @@ type FilterTab = "all" | "active" | "free";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<UserData[]>([]);
+  const now = useSubscriptionClock(users.map((user) => user.subscription?.expiresAt));
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
@@ -51,50 +54,22 @@ export default function AdminUsers() {
   const { verifyAdminPassword } = useAdmin();
 
   useEffect(() => {
-    loadUsers();
+    const unsubscribe = subscribeUsers((data) => {
+      setUsers(data);
+      setIsLoading(false);
+    }, () => {
+      setIsLoading(false);
+      toast({ title: "Unable to refresh users", variant: "destructive" });
+    });
     getGiftDayState().then((s) => setGiftActive(s.active)).catch(() => {});
+    return unsubscribe;
   }, []);
 
   const loadUsers = async () => {
     setIsLoading(true);
     const data = await getAllUsers();
     
-    // Deduplicate by email — keep the entry with a subscription or the newest one, delete the rest
-    const emailMap = new Map<string, UserData[]>();
-    data.forEach((u) => {
-      const key = u.email.toLowerCase();
-      if (!emailMap.has(key)) emailMap.set(key, []);
-      emailMap.get(key)!.push(u);
-    });
-
-    const uniqueUsers: UserData[] = [];
-    const deletionPromises: Promise<void>[] = [];
-
-    emailMap.forEach((group) => {
-      if (group.length === 1) {
-        uniqueUsers.push(group[0]);
-        return;
-      }
-      // Prefer the one with an active subscription, otherwise the one created most recently
-      group.sort((a, b) => {
-        const aActive = a.subscription?.isActive ? 1 : 0;
-        const bActive = b.subscription?.isActive ? 1 : 0;
-        if (bActive !== aActive) return bActive - aActive;
-        return (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0);
-      });
-      uniqueUsers.push(group[0]); // keep the best one
-      // Delete the duplicates from Firestore
-      for (let i = 1; i < group.length; i++) {
-        deletionPromises.push(deleteUser(group[i].id));
-      }
-    });
-
-    if (deletionPromises.length > 0) {
-      await Promise.all(deletionPromises);
-      toast({ title: `Cleaned up ${deletionPromises.length} duplicate user(s)` });
-    }
-
-    setUsers(uniqueUsers);
+    setUsers(preserveSubscriberAccounts(data));
     setIsLoading(false);
   };
 
@@ -203,14 +178,11 @@ export default function AdminUsers() {
   };
 
   const isSubscriptionActive = (user: UserData) => {
-    return user.subscription?.isActive && 
-           user.subscription.expiresAt && 
-           new Date(user.subscription.expiresAt) > new Date();
+    return isSubscriptionCurrent(user.subscription, now);
   };
 
   const getRemainingTime = (expiresAt: Date) => {
-    const now = new Date();
-    const diff = new Date(expiresAt).getTime() - now.getTime();
+    const diff = new Date(expiresAt).getTime() - now;
     if (diff <= 0) return "Expired";
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));

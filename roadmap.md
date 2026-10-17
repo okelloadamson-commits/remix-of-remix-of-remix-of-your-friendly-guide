@@ -1,7 +1,8 @@
 # Roadmap
 
-- [ ] Prevent premature subscription removal and update Active at the saved expiry.
-- [ ] Test subscription boundary, timestamp handling, and account preservation.
+- [x] Prevent premature subscription removal and update Active at the saved expiry.
+- [x] Test subscription boundary, timestamp handling, and account preservation.
+- [ ] Verify the signed-in admin subscriber flow (blocked: no Firebase admin session available).
 
 - [x] Tighten and center the mobile phone, Agent, and Advert controls without overflow.
 - [x] Remove the Upload Luo Champion admin card and the Luo Champion checkbox from movie uploads only.

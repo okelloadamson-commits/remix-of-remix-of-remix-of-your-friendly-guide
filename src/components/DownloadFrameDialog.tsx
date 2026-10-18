@@ -95,6 +95,19 @@ export function DownloadFrameDialog({
             allow="downloads"
             onLoad={checkFrame}
           />
+          {/* Restore the original Drive-page click shields: leave the
+              provider's Download anyway control exposed, not its title. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden md:block">
+            <div className="pointer-events-auto h-[140px] w-full" />
+            <div className="pointer-events-auto absolute top-[140px] left-0 h-[calc(100%-140px)] w-[25%]" />
+            <div className="pointer-events-auto absolute top-[140px] right-0 h-[calc(100%-140px)] w-[25%]" />
+          </div>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 md:hidden">
+            <div className="pointer-events-auto h-[180px] w-full" />
+            <div className="pointer-events-auto absolute top-[180px] left-0 h-[calc(100%-180px)] w-[12%]" />
+            <div className="pointer-events-auto absolute top-[180px] right-0 h-[calc(100%-180px)] w-[12%]" />
+            <div className="pointer-events-auto absolute bottom-0 left-0 h-[35%] w-full" />
+          </div>
           {blankUrl === url && fallbackUrl && (
             <div className="absolute inset-0 flex items-center justify-center bg-background">
               <Button asChild>

@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Restore Download Anyway only for a blank embedded page and verify the frame remains stable.
+- [x] Restore Download Anyway for confirmed blank embedded pages; verify frame stability and a nonempty test download.
+- [ ] Detect blank Google Drive pages when cross-origin access is blocked (blocked: Google Drive does not expose its embedded page state to the website).
 
 - [x] Prevent premature subscription removal and update Active at the saved expiry.
 - [x] Test subscription boundary, timestamp handling, and account preservation.

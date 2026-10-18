@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Restore Download Anyway for confirmed blank embedded pages; verify frame stability and a nonempty test download.
+- [ ] Detect blank Google Drive pages when cross-origin access is blocked (blocked: Google Drive does not expose its embedded page state to the website).
+
 - [x] Prevent premature subscription removal and update Active at the saved expiry.
 - [x] Test subscription boundary, timestamp handling, and account preservation.
 - [ ] Verify the signed-in admin subscriber flow (blocked: no Firebase admin session available).

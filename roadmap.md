@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Restore Download Anyway only for a blank embedded page and verify the frame remains stable.
+
 - [x] Prevent premature subscription removal and update Active at the saved expiry.
 - [x] Test subscription boundary, timestamp handling, and account preservation.
 - [ ] Verify the signed-in admin subscriber flow (blocked: no Firebase admin session available).

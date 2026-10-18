@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Restore and verify the original embedded download navigation restrictions without reloading the frame.
+
 - [x] Restore Download Anyway for confirmed blank embedded pages; verify frame stability and a nonempty test download.
 - [ ] Detect blank Google Drive pages when cross-origin access is blocked (blocked: Google Drive does not expose its embedded page state to the website).
 

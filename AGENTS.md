@@ -14,4 +14,4 @@
 - Expiry-sensitive views use the subscription clock to update without requiring a Firebase write or page reload.
 - Gift revocation uses a transaction and only clears the current gift plan; a replacement paid plan must remain untouched.
 
-- Download dialogs keep the embedded frame mounted across player updates and use one user-initiated fallback link; callback identity must never restart navigation or trigger duplicate downloads.
+- Download dialogs keep the embedded frame mounted across player updates; callback identity must never restart navigation or trigger duplicate downloads. Downloads use the embedded provider's controls without an additional website download button.

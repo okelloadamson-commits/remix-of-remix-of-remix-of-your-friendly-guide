@@ -1,6 +1,6 @@
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface DownloadFrameDialogProps {
   open: boolean;
@@ -15,12 +15,9 @@ export function DownloadFrameDialog({
   open,
   url,
   title,
-  fallbackUrl,
-  fileId,
   onClose,
 }: DownloadFrameDialogProps) {
   const closeRef = useRef(onClose);
-  const [showFallback, setShowFallback] = useState(false);
 
   // Parent player updates must not reload the embedded confirmation page.
   useEffect(() => {
@@ -29,7 +26,6 @@ export function DownloadFrameDialog({
 
   useEffect(() => {
     if (!open) return;
-    setShowFallback(false);
     const previousOverflow = document.body.style.overflow;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeRef.current();
@@ -41,21 +37,6 @@ export function DownloadFrameDialog({
       document.body.style.overflow = previousOverflow;
     };
   }, [open, url]);
-
-  // A quota check may reveal the alternative, but never navigates the iframe.
-  useEffect(() => {
-    if (!open || !fileId || !fallbackUrl) return;
-    const controller = new AbortController();
-    fetch(`/api/public/drive-check?id=${encodeURIComponent(fileId)}`, {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((data: { blocked?: boolean }) => {
-        if (!controller.signal.aborted && data.blocked) setShowFallback(true);
-      })
-      .catch(() => {});
-    return () => controller.abort();
-  }, [open, url, fileId, fallbackUrl]);
 
   if (!open) return null;
 
@@ -89,28 +70,8 @@ export function DownloadFrameDialog({
             title={title}
             className="h-full w-full bg-background"
             allow="downloads"
-            onLoad={() => setShowFallback(true)}
           />
         </div>
-        {fallbackUrl && (
-          <div className="min-h-24 shrink-0 border-t border-border bg-background p-3 sm:p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">Download not started?</p>
-              <Button asChild size="lg" className="w-full sm:w-auto" disabled={!showFallback}>
-                <a
-                  href={fallbackUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-disabled={!showFallback}
-                  className={!showFallback ? "pointer-events-none opacity-50" : undefined}
-                >
-                  <Download className="h-4 w-4" />
-                  Download Anyway
-                </a>
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

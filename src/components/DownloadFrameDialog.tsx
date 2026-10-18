@@ -1,6 +1,7 @@
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { isDownloadFrameBlank } from "@/lib/download-frame-state";
 
 interface DownloadFrameDialogProps {
   open: boolean;
@@ -15,9 +16,30 @@ export function DownloadFrameDialog({
   open,
   url,
   title,
+  fallbackUrl,
   onClose,
 }: DownloadFrameDialogProps) {
   const closeRef = useRef(onClose);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const [blankUrl, setBlankUrl] = useState<string | null>(null);
+
+  const checkFrame = useCallback(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    try {
+      setBlankUrl(isDownloadFrameBlank(frame.contentDocument, frame.getAttribute("src") || "") ? frame.getAttribute("src") : null);
+    } catch {
+      // Drive controls its own document; unreadable does not mean blank.
+      setBlankUrl(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    setBlankUrl(null);
+    if (!open) return;
+    const timer = window.setInterval(checkFrame, 750);
+    return () => window.clearInterval(timer);
+  }, [open, url, checkFrame]);
 
   // Parent player updates must not reload the embedded confirmation page.
   useEffect(() => {
@@ -66,11 +88,23 @@ export function DownloadFrameDialog({
         </div>
         <div className="relative min-h-0 flex-1">
           <iframe
+            ref={frameRef}
             src={url}
             title={title}
             className="h-full w-full bg-background"
             allow="downloads"
+            onLoad={checkFrame}
           />
+          {blankUrl === url && fallbackUrl && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background">
+              <Button asChild>
+                <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4" />
+                  Download Anyway
+                </a>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

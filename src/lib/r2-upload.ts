@@ -102,7 +102,11 @@ export async function beginUpload(file: File, scope: string, folder: string) {
   }
   const job = new ResumableUpload(file, scoped, folder, fingerprint, transport, saved);
   jobs.set(scoped, job);
-  job.subscribe(() => { if (job.snapshot.status === "complete") void removeSession(scoped); });
+  job.subscribe(() => {
+    if (job.snapshot.status !== "complete") return;
+    jobs.delete(scoped);
+    void removeSession(scoped).catch(() => {});
+  });
   return job;
 }
 export async function discardUpload(scope: string) {

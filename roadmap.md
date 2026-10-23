@@ -6,7 +6,7 @@
 - [ ] Connect and verify real R2 uploads and Firebase save/read-back (blocked: private upload token not saved, no Firebase admin session, and bucket CORS unverified).
 - [ ] Verify H.264 MP4 playback on an equipped browser (blocked: sandbox Chromium rejected the H.264 test codec; WebM playback passed).
 
-- [ ] Restore and verify the original embedded download navigation restrictions without reloading the frame.
+- [x] Restore and verify the original embedded download navigation restrictions without reloading the frame; desktop/mobile regression checks passed.
 
 - [x] Restore Download Anyway for confirmed blank embedded pages; verify frame stability and a nonempty test download.
 - [ ] Detect blank Google Drive pages when cross-origin access is blocked (blocked: Google Drive does not expose its embedded page state to the website).

@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { UploadAwareDialogContent } from "@/components/admin/UploadAwareDialogContent";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
@@ -166,7 +167,7 @@ export default function AdminMovies() {
               Add Movie
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <UploadAwareDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingMovie ? "Edit Movie" : "Add New Movie"}</DialogTitle>
             </DialogHeader>
@@ -327,7 +328,7 @@ export default function AdminMovies() {
                 </Button>
               </div>
             </form>
-          </DialogContent>
+          </UploadAwareDialogContent>
         </Dialog>
       </div>
 

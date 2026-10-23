@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { beginUpload, getUpload, getSavedUpload, discardUpload } from "@/lib/r2-upload";
+import { setUploadActive } from "@/lib/upload-activity";
 import type { ResumableUpload, UploadSnapshot } from "@/lib/r2-upload-engine";
 import { DirectVideoPlayer } from "@/components/movies/DirectVideoPlayer";
 
@@ -55,6 +56,11 @@ export function MediaUploadField({ id, value, onChange, scope, folder, accept, r
   };
   const busy = !!snapshot && !["complete", "error", "paused", "ready"].includes(snapshot.status);
   const incomplete = selecting || !!snapshot && snapshot.status !== "complete";
+  const uploading = selecting || (!!snapshot && !["complete", "error", "paused"].includes(snapshot.status));
+  useEffect(() => {
+    setUploadActive(scope, uploading);
+    return () => setUploadActive(scope, false);
+  }, [scope, uploading]);
   useEffect(() => {
     const form = holder.current?.closest("form");
     if (!form) return;

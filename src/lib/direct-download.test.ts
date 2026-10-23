@@ -37,3 +37,15 @@ test("R2 download streams attachment bytes and forwards resume ranges", async ()
   assert.equal(response.headers.get("Content-Range"), "bytes 3-7/8");
   assert.equal(await response.text(), "video");
 });
+
+test("download name preserves the movie title for both modern and older download managers", async () => {
+  const filename = "Luo Ancient Movie.mp4";
+  const response = await streamMediaDownload(new Request(`https://site.test/api/public/media-download?${new URLSearchParams({ source: "https://pub-example.r2.dev/random-upload-id.mp4", filename })}`), async () => new Response("video"));
+  assert.equal(response.headers.get("Content-Disposition"), 'attachment; filename="Luo Ancient Movie.mp4"; filename*=UTF-8\'\'Luo%20Ancient%20Movie.mp4');
+});
+
+test("episode download name preserves season, episode and actual file extension", async () => {
+  const filename = "Luo Story S02E03.webm";
+  const response = await streamMediaDownload(new Request(`https://site.test/api/public/media-download?${new URLSearchParams({ source: "https://pub-example.r2.dev/random-id.webm", filename })}`), async () => new Response("video"));
+  assert.equal(response.headers.get("Content-Disposition"), 'attachment; filename="Luo Story S02E03.webm"; filename*=UTF-8\'\'Luo%20Story%20S02E03.webm');
+});

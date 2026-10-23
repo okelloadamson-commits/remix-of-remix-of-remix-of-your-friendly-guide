@@ -62,3 +62,24 @@ it("authorization and missing ETag failures stop with an actionable error", asyn
   assert.equal(job.snapshot.status, "error");
   assert.equal(job.snapshot.message, "R2 bucket must expose ETag");
 });
+it("pause does not complete the interrupted part and resume finishes it", async () => {
+  const { transport } = setup();
+  let entered: (() => void) | undefined;
+  const uploading = new Promise<void>((resolve) => { entered = resolve; });
+  transport.put = async (_url, _blob, _progress, signal) => {
+    entered?.();
+    await new Promise<void>((_resolve, reject) => signal.addEventListener("abort", () => reject(new DOMException("Paused", "AbortError")), { once: true }));
+    return "unused";
+  };
+  const job = new ResumableUpload(new File(["video"], "video.mp4"), "movies", "movies", "file", transport);
+  const running = job.start();
+  await uploading;
+  job.pause();
+  await running;
+  assert.equal(job.snapshot.status, "paused");
+  assert.equal(job.record?.parts.length, 0);
+  transport.put = async () => "resumed-etag";
+  await job.start();
+  assert.equal(job.snapshot.status, "complete");
+  assert.equal(job.record?.parts[0]?.etag, "resumed-etag");
+});

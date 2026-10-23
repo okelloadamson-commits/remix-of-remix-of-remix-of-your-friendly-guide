@@ -40,7 +40,7 @@ export const requestR2Upload = createServerFn({ method: "POST" })
     if (data.action !== "create" && (!data.key || !data.uploadId)) {
       return { ok: false as const, status: 400, error: "Upload session is missing." };
     }
-    if (data.action === "sign" && !data.partNumbers || data.action === "complete" && !data.parts) {
+    if ((data.action === "sign" && !data.partNumbers) || (data.action === "complete" && !data.parts)) {
       return { ok: false as const, status: 400, error: "Upload parts are missing." };
     }
     const { idToken: _token, action, ...body } = data;

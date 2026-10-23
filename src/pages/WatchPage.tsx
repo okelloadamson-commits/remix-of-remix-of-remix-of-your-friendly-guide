@@ -1,5 +1,6 @@
 import { DirectVideoPlayer } from "@/components/movies/DirectVideoPlayer";
 import { usesDirectVideoPlayer } from "@/lib/upload-policy";
+import { startDirectVideoDownload } from "@/lib/direct-download";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
@@ -277,6 +278,13 @@ export default function WatchPage() {
 
       setIsDownloading(true);
       const filename = getDownloadFilename();
+
+      if (usesDirectVideoPlayer(rawVideoUrl)) {
+        const extension = new URL(rawVideoUrl).pathname.match(/\.(mp4|m4v|webm|mov|m3u8)$/i)?.[1] || "mp4";
+        startDirectVideoDownload(rawVideoUrl, `${filename}.${extension}`);
+        setIsDownloading(false);
+        return;
+      }
 
       const contentDownloadId = isSeries
         ? `${seriesId || "series"}-${selectedEpisode?.id || selectedEpisode?.episodeNumber || "episode"}`

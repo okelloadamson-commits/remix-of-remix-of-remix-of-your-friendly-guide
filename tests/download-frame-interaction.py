@@ -18,7 +18,7 @@ async def main():
             await context.route('**/confirmation-shield-test', lambda r: r.fulfill(content_type='text/html', body=markup))
             await context.route('**/test-download*', lambda r: r.fulfill(content_type='video/mp4', headers={'Content-Disposition': 'attachment; filename="test.mp4"'}, body=b'download-shield-test'))
             page = await context.new_page()
-            await page.goto('http://localhost:8080', wait_until='networkidle')
+            await page.goto('http://localhost:8080', wait_until='domcontentloaded')
             await page.evaluate('''async () => {
               const R = await import('/node_modules/.vite/deps/react.js');
               const D = await import('/node_modules/.vite/deps/react-dom_client.js');

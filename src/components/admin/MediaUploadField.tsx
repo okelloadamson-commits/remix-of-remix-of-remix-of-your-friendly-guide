@@ -56,6 +56,11 @@ export function MediaUploadField({ id, value, onChange, scope, folder, accept, r
   };
   const busy = !!snapshot && !["complete", "error", "paused", "ready"].includes(snapshot.status);
   const incomplete = selecting || !!snapshot && snapshot.status !== "complete";
+  const uploading = selecting || (!!snapshot && !["complete", "error", "paused"].includes(snapshot.status));
+  useEffect(() => {
+    setUploadActive(scope, uploading);
+    return () => setUploadActive(scope, false);
+  }, [scope, uploading]);
   useEffect(() => {
     const form = holder.current?.closest("form");
     if (!form) return;

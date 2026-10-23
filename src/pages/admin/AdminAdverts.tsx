@@ -140,13 +140,7 @@ export default function AdminAdverts() {
 
               <div className="space-y-2">
                 <Label htmlFor="linkUrl">Link URL</Label>
-                <Input
-                  id="linkUrl"
-                  type="url"
-                  value={formData.linkUrl}
-                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                  required
-                />
+                <MediaUploadField id="linkUrl" value={formData.linkUrl} onChange={(url) => setFormData((prev) => ({ ...prev, linkUrl: url }))} scope={`AdminAdverts/${editingAdvert?.id || "new"}/linkUrl`} folder="adverts/videos" accept="video/mp4,video/webm,video/quicktime,.m4v" video required />
               </div>
 
               <div className="space-y-2">

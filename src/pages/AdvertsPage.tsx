@@ -1,4 +1,6 @@
 import { MainLayout } from "@/components/layout/MainLayout";
+import { DirectVideoPlayer } from "@/components/movies/DirectVideoPlayer";
+import { usesDirectVideoPlayer } from "@/lib/upload-policy";
 import { getAdverts, type Advert } from "@/lib/firebase-db";
 import { Megaphone, Play, X, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack } from "lucide-react";
 import { PageLoader } from "@/components/PageLoader";
@@ -212,6 +214,8 @@ export default function AdvertsPage() {
                     </div>
                   </div>
                 </>
+              ) : usesDirectVideoPlayer(activeVideo.linkUrl) ? (
+                <DirectVideoPlayer src={activeVideo.linkUrl} poster={activeVideo.imageUrl} title={activeVideo.title} />
               ) : (
                 <iframe src={getEmbedUrl(activeVideo.linkUrl)} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" title={activeVideo.title} />
               )}

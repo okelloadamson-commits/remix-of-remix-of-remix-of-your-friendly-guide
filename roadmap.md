@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Start directly uploaded video downloads without a dialog; preserve Google Drive downloads and verify both paths.
+- [x] Start directly uploaded video downloads without a dialog; browser attachment fixture, streaming tests and desktop/mobile Drive regression checks passed.
+- [ ] Verify a real uploaded video through a signed-in subscriber's Download button (blocked: no Firebase subscriber session available).
 
 - [x] Add secure R2 file upload option to every admin media field without changing existing links.
 - [x] Implement multipart retry/resume, mobile progress, speed and status; retry/resume tests passed.

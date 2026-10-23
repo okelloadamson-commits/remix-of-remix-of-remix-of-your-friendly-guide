@@ -18,6 +18,7 @@ export function formatUploadBytes(bytes: number) {
   return `${(bytes / 1024).toFixed(1)} KB`;
 }
 export function MediaUploadField({ id, value, onChange, scope, folder, accept, required, placeholder, video }: Props) {
+  const holder = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const callback = useRef(onChange);
   callback.current = onChange;
@@ -53,13 +54,26 @@ export function MediaUploadField({ id, value, onChange, scope, folder, accept, r
     finally { setSelecting(false); if (input.current) input.current.value = ""; }
   };
   const busy = !!snapshot && !["complete", "error", "paused", "ready"].includes(snapshot.status);
+  const incomplete = selecting || !!snapshot && snapshot.status !== "complete";
+  useEffect(() => {
+    const form = holder.current?.closest("form");
+    if (!form) return;
+    const guard = (event: Event) => {
+      if (!incomplete) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setError("Finish or discard the file upload before saving.");
+    };
+    form.addEventListener("submit", guard, true);
+    return () => form.removeEventListener("submit", guard, true);
+  }, [incomplete]);
   const discard = async () => {
     setError("");
     try { await discardUpload(scope); setJob(undefined); setSnapshot(undefined); setSavedName(""); }
     catch (failure) { setError(failure instanceof Error ? failure.message : "Could not discard upload."); }
   };
   return (
-    <div className="min-w-0 space-y-2" data-upload-field={id}>
+    <div ref={holder} className="min-w-0 space-y-2" data-upload-field={id}>
       <Tabs defaultValue={job || savedName ? "file" : "link"} className="min-w-0">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="link" className="gap-1.5"><LinkIcon className="h-4 w-4 shrink-0" />URL / Drive</TabsTrigger>
@@ -83,7 +97,7 @@ export function MediaUploadField({ id, value, onChange, scope, folder, accept, r
               {snapshot.status !== "complete" && <Button type="button" size="icon" variant="ghost" className="h-8 w-8" aria-label="Discard upload" title="Discard upload" onClick={() => void discard()}><Trash2 className="h-4 w-4" /></Button>}</div>
             </div>
           </div>}
-          {value && <Input aria-label={`${id} uploaded URL`} type="url" value={value} readOnly className="text-xs" />}
+          <Input aria-label={`${id} uploaded URL`} type="url" value={value} readOnly required={required} placeholder="Uploaded file URL" className="text-xs" />
         </TabsContent>
       </Tabs>
       {error && <p role="alert" className="break-words text-xs text-destructive">{error}</p>}

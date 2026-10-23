@@ -113,7 +113,7 @@ export async function discardUpload(scope: string) {
   jobs.delete(scoped);
   await removeSession(scoped);
 }
-window.addEventListener("beforeunload", (event) => {
+if (typeof window !== "undefined") window.addEventListener("beforeunload", (event) => {
   if (Array.from(jobs.values()).some((job) => !["complete", "error", "paused"].includes(job.snapshot.status))) {
     event.preventDefault(); event.returnValue = "";
   }

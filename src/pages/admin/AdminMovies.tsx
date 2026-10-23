@@ -1,3 +1,4 @@
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -223,35 +224,18 @@ export default function AdminMovies() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="posterUrl">Poster URL</Label>
-                  <Input
-                    id="posterUrl"
-                    type="url"
-                    value={formData.posterUrl}
-                    onChange={(e) => setFormData({ ...formData, posterUrl: e.target.value })}
-                    required
-                  />
+                  <MediaUploadField id="posterUrl" value={formData.posterUrl} onChange={(url) => setFormData((prev) => ({ ...prev, posterUrl: url }))} scope={`AdminMovies/${editingMovie?.id || "new"}/posterUrl`} folder="movies/posterUrl" accept="image/*" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="videoUrl">Video URL</Label>
-                  <Input
-                    id="videoUrl"
-                    type="url"
-                    value={formData.videoUrl}
-                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                    required
-                  />
+                  <MediaUploadField id="videoUrl" value={formData.videoUrl} onChange={(url) => setFormData((prev) => ({ ...prev, videoUrl: url }))} scope={`AdminMovies/${editingMovie?.id || "new"}/videoUrl`} folder="movies/videoUrl" accept="video/mp4,video/webm,video/quicktime,.m4v" video required />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="trailerUrl">Trailer URL (optional)</Label>
-                  <Input
-                    id="trailerUrl"
-                    type="url"
-                    value={formData.trailerUrl}
-                    onChange={(e) => setFormData({ ...formData, trailerUrl: e.target.value })}
-                  />
+                  <MediaUploadField id="trailerUrl" value={formData.trailerUrl} onChange={(url) => setFormData((prev) => ({ ...prev, trailerUrl: url }))} scope={`AdminMovies/${editingMovie?.id || "new"}/trailerUrl`} folder="movies/trailerUrl" accept="video/mp4,video/webm,video/quicktime,.m4v" video />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="vjName">VJ Name (optional)</Label>

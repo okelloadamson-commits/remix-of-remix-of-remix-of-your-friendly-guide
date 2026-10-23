@@ -1,3 +1,4 @@
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,23 +173,11 @@ export default function AdminApps() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="iconUrl">Icon URL</Label>
-                  <Input
-                    id="iconUrl"
-                    type="url"
-                    value={formData.iconUrl}
-                    onChange={(e) => setFormData({ ...formData, iconUrl: e.target.value })}
-                    required
-                  />
+                  <MediaUploadField id="iconUrl" value={formData.iconUrl} onChange={(url) => setFormData((prev) => ({ ...prev, iconUrl: url }))} scope={`AdminApps/${editingApp?.id || "new"}/iconUrl`} folder="apps/iconUrl" accept="image/*" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="downloadUrl">Download URL</Label>
-                  <Input
-                    id="downloadUrl"
-                    type="url"
-                    value={formData.downloadUrl}
-                    onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
-                    required
-                  />
+                  <MediaUploadField id="downloadUrl" value={formData.downloadUrl} onChange={(url) => setFormData((prev) => ({ ...prev, downloadUrl: url }))} scope={`AdminApps/${editingApp?.id || "new"}/downloadUrl`} folder="apps/downloadUrl" accept=".apk,.aab,.zip,.exe,.dmg,.ipa" required />
                 </div>
               </div>
 

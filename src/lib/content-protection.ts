@@ -1,4 +1,5 @@
 // Anti-inspection and content protection utilities
+import { allowAdminContextMenu } from "./context-menu-policy";
 
 let contentProtectionInitialized = false;
 
@@ -111,6 +112,7 @@ export function initContentProtection() {
 
   // Disable right-click context menu
   document.addEventListener('contextmenu', (e) => {
+    if (allowAdminContextMenu(window.location.pathname)) return;
     e.preventDefault();
     return false;
   });

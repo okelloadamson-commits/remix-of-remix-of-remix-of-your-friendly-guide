@@ -1,5 +1,10 @@
 # Roadmap
 
+- [ ] Add secure R2 file upload option to every admin media field without changing existing links.
+- [ ] Implement multipart retry/resume, mobile progress, speed and status.
+- [ ] Play directly uploaded videos with Mux while preserving Google Drive playback and subscription checks.
+- [ ] Verify uploads, reconnect/resume, player and mobile layouts (live upload requires private token and Firebase admin sign-in).
+
 - [ ] Restore and verify the original embedded download navigation restrictions without reloading the frame.
 
 - [x] Restore Download Anyway for confirmed blank embedded pages; verify frame stability and a nonempty test download.

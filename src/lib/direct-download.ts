@@ -21,7 +21,8 @@ export function startDirectVideoDownload(source: string, filename: string): void
   if (!href) throw new Error("Invalid direct video URL");
   const anchor = document.createElement("a");
   anchor.href = href;
-  anchor.download = filename;
+  // Same-origin R2 response supplies attachment headers; other hosts use the download hint.
+  if (!href.startsWith("/api/public/media-download?")) anchor.download = filename;
   anchor.rel = "noopener";
   document.body.appendChild(anchor);
   anchor.click();

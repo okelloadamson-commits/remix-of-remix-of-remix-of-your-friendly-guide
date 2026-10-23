@@ -16,3 +16,6 @@
 
 - Download dialogs keep the embedded frame mounted across player updates; callback identity must never restart navigation or trigger duplicate downloads. Show the fallback inside the frame area only for a confirmed blank document; unreadable cross-origin pages and elapsed time are not proof of blankness.
 - Keep the original desktop/mobile click shields over the embedded provider's filename and surrounding links; they preserve the provider's own download control without accessing its cross-origin document, but depend on the provider's layout.
+- R2 signing requests verify Firebase admin identity server-side and keep the shared upload token in private storage; page visibility is not credential protection.
+- Direct media upload fields preserve URL/Drive inputs, checkpoint multipart ETags in IndexedDB, and retry only unconfirmed parts; after a browser restart the original file must be reselected.
+- Mux playback handles direct media only inside existing subscription gates; Google Drive embeds remain unchanged. Public R2 URLs are not DRM or server-protected playback.

@@ -176,6 +176,16 @@
 }
 
 @layer components {
+  .direct-video-player mux-player {
+    width: 100%;
+    height: 100%;
+    --media-primary-color: var(--foreground);
+    --media-secondary-color: var(--background);
+    --media-accent-color: var(--primary);
+    --media-download-button-display: none;
+    --cast-button: none;
+    --airplay-button: none;
+  }
   .nav-link {
     display: flex;
     align-items: center;

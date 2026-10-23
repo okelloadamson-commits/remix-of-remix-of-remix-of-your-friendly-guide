@@ -1,3 +1,5 @@
+import { DirectVideoPlayer } from "@/components/movies/DirectVideoPlayer";
+import { usesDirectVideoPlayer } from "@/lib/upload-policy";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Star, Lock, Share2, Flag, Trophy, Play, Download, Loader2 } from "lucide-react";
@@ -218,7 +220,9 @@ export default function ComedyWatchPage() {
           className="relative bg-black w-full scroll-mt-20 overflow-hidden max-w-full"
           style={{ aspectRatio: "16 / 9" }}
         >
-          {videoUrl ? (
+          {usesDirectVideoPlayer(comedy.videoUrl) ? (
+            <DirectVideoPlayer src={comedy.videoUrl} poster={comedy.posterUrl} title={comedy.title} />
+          ) : videoUrl ? (
             <div className="absolute inset-0 w-full h-full overflow-hidden">
               <iframe
                 src={videoUrl}

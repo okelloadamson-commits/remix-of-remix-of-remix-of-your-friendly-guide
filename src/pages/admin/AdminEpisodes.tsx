@@ -1,3 +1,4 @@
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -226,23 +227,11 @@ export default function AdminEpisodes() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
-                  <Input
-                    id="thumbnailUrl"
-                    type="url"
-                    value={formData.thumbnailUrl}
-                    onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-                    required
-                  />
+                  <MediaUploadField id="thumbnailUrl" value={formData.thumbnailUrl} onChange={(url) => setFormData((prev) => ({ ...prev, thumbnailUrl: url }))} scope={`AdminEpisodes/${editingEpisode?.id || "new"}/thumbnailUrl`} folder="episodes/thumbnailUrl" accept="image/*" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="videoUrl">Video URL</Label>
-                  <Input
-                    id="videoUrl"
-                    type="url"
-                    value={formData.videoUrl}
-                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                    required
-                  />
+                  <MediaUploadField id="videoUrl" value={formData.videoUrl} onChange={(url) => setFormData((prev) => ({ ...prev, videoUrl: url }))} scope={`AdminEpisodes/${editingEpisode?.id || "new"}/videoUrl`} folder="episodes/videoUrl" accept="video/mp4,video/webm,video/quicktime,.m4v" video required />
                 </div>
               </div>
 

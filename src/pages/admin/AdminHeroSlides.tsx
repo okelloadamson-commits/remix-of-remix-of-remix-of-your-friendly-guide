@@ -1,3 +1,4 @@
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,14 +175,7 @@ export default function AdminHeroSlides() {
               <div className="space-y-2">
                 <Label>Image</Label>
                 <div className="flex gap-2">
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="Paste URL or upload below"
-                    required
-                  />
+                  <MediaUploadField id="imageUrl" value={formData.imageUrl} onChange={(url) => setFormData((prev) => ({ ...prev, imageUrl: url }))} scope={`AdminHeroSlides/${editingHero?.id || "new"}/imageUrl`} folder="heroslides/imageUrl" accept="image/*" required />
                 </div>
                 <input
                   ref={fileInputRef}

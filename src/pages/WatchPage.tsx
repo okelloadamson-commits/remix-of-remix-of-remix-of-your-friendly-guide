@@ -1,3 +1,5 @@
+import { DirectVideoPlayer } from "@/components/movies/DirectVideoPlayer";
+import { usesDirectVideoPlayer } from "@/lib/upload-policy";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
@@ -507,7 +509,9 @@ export default function WatchPage() {
                   );
                 }
 
-                return videoUrl ? (
+                return usesDirectVideoPlayer(rawVideoUrl) && rawVideoUrl ? (
+                  <DirectVideoPlayer src={rawVideoUrl} poster={posterUrl} title={currentContent.title} />
+                ) : videoUrl ? (
                   <div className="absolute inset-0 w-full h-full overflow-hidden">
                     <iframe
                       src={videoUrl}

@@ -1,3 +1,4 @@
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,7 +107,7 @@ export default function AdminAdverts() {
               Add Guide/Advert
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingAdvert ? "Edit" : "Add New"} Guide/Advert</DialogTitle>
             </DialogHeader>
@@ -134,13 +135,7 @@ export default function AdminAdverts() {
 
               <div className="space-y-2">
                 <Label htmlFor="imageUrl">Image URL</Label>
-                <Input
-                  id="imageUrl"
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  required
-                />
+                <MediaUploadField id="imageUrl" value={formData.imageUrl} onChange={(url) => setFormData((prev) => ({ ...prev, imageUrl: url }))} scope={`AdminAdverts/${editingAdvert?.id || "new"}/imageUrl`} folder="adverts/imageUrl" accept="image/*" required />
               </div>
 
               <div className="space-y-2">

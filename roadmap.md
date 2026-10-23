@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Start directly uploaded video downloads without a dialog; preserve Google Drive downloads and verify both paths.
+
 - [x] Add secure R2 file upload option to every admin media field without changing existing links.
 - [x] Implement multipart retry/resume, mobile progress, speed and status; retry/resume tests passed.
 - [x] Play directly uploaded videos with Mux while preserving Google Drive playback and subscription checks; browser playback verified with WebM on mobile/desktop.

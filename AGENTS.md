@@ -19,3 +19,4 @@
 - R2 signing requests verify Firebase admin identity server-side and keep the shared upload token in private storage; page visibility is not credential protection.
 - Direct media upload fields preserve URL/Drive inputs, checkpoint multipart ETags in IndexedDB, and retry only unconfirmed parts; after a browser restart the original file must be reselected.
 - Mux playback handles direct media only inside existing subscription gates; Google Drive embeds remain unchanged. Public R2 URLs are not DRM or server-protected playback.
+- Direct video downloads bypass the dialog after existing access and limit checks; public R2 downloads stream through an attachment endpoint restricted to public R2 hosts, avoiding whole-file browser buffering and leaving Drive unchanged.

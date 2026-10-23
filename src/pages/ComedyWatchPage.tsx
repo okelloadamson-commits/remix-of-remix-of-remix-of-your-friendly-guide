@@ -1,5 +1,6 @@
 import { DirectVideoPlayer } from "@/components/movies/DirectVideoPlayer";
 import { usesDirectVideoPlayer } from "@/lib/upload-policy";
+import { startDirectVideoDownload } from "@/lib/direct-download";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Star, Lock, Share2, Flag, Trophy, Play, Download, Loader2 } from "lucide-react";
@@ -184,6 +185,12 @@ export default function ComedyWatchPage() {
         return;
       }
       setIsDownloading(true);
+      if (usesDirectVideoPlayer(rawVideoUrl)) {
+        const extension = new URL(rawVideoUrl).pathname.match(/\.(mp4|m4v|webm|mov|m3u8)$/i)?.[1] || "mp4";
+        startDirectVideoDownload(rawVideoUrl, `${comedy.title}.${extension}`);
+        setIsDownloading(false);
+        return;
+      }
       const downloadLink = await createDownloadLink(
         comedy.id ?? id ?? "comedy",
         comedy.title,

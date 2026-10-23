@@ -42,7 +42,8 @@ async function request(action: "create" | "sign" | "complete" | "abort", body: R
   const user = auth.currentUser;
   if (!user) throw new UploadFailure("Sign in as admin to upload files.", true);
   const response = await requestR2Upload({ data: { ...body, action, idToken: await user.getIdToken() } });
-  if (!response.ok) throw new UploadFailure(response.error, response.status >= 400 && response.status < 500 || response.status === 503);
+  if (!response.ok) throw new UploadFailure(response.error,
+    (response.status >= 400 && response.status < 500 && response.status !== 429) || response.error === "Upload service needs its private token saved once.");
   return response.result;
 }
 function put(url: string, blob: Blob, progress: (bytes: number) => void, signal: AbortSignal): Promise<string> {
